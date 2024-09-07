@@ -38,8 +38,6 @@ public class UIScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
-
         sliderHeight.maxValue = 300;    // cm
         sliderHeight.minValue = 100;    // cm
         sliderWeight.maxValue = 200;    // kg
@@ -47,8 +45,6 @@ public class UIScript : MonoBehaviour
 
         inputHeight.text = "0";
         inputWeight.text = "0";
-
-
     }
 
     // Update is called once per frame
