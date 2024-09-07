@@ -36,7 +36,7 @@ public class UIScript : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         sliderHeight.maxValue = 300;    // cm
         sliderHeight.minValue = 100;    // cm
