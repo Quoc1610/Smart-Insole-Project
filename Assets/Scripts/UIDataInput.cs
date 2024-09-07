@@ -32,26 +32,11 @@ public class UIScript : MonoBehaviour
 
         outputBMI.text = "Your BMI: " + Math.Round(BMI, 1).ToString();
     }
-    public void ChangeValueSlider(int index){
-        if(index == 0)
-        {
-            sliderHeight.value = Convert.ToSingle(inputHeight.text);
-        }
-        else if(index == 1)
-        {
-            sliderWeight.value = Convert.ToSingle(inputWeight.text);
-        }
-    }
-    public void HandleSlider(int index)
+
+    private void HandleSlider()
     {
-        if(index == 0)
-        {
-            inputHeight.text = sliderHeight.value.ToString();
-        }
-        else if(index == 1)
-        {
-            inputWeight.text = sliderWeight.value.ToString();
-        }
+        inputHeight.text = sliderHeight.value.ToString();
+        inputWeight.text = sliderWeight.value.ToString();
     }
 
     // Start is called before the first frame update
@@ -71,6 +56,6 @@ public class UIScript : MonoBehaviour
     void Update()
     {
         CalculateBMI();
-        // HandleSlider();
+        HandleSlider();
     }
 }
