@@ -13,6 +13,10 @@ public class UIScript : MonoBehaviour
     public Slider sliderHeight;
     public Slider sliderWeight;
 
+    double height;
+    double weight;
+    double BMI;
+
 
     public void ButtonSubmit()
     {
@@ -21,10 +25,10 @@ public class UIScript : MonoBehaviour
 
     private void CalculateBMI()
     {
-        double height = Convert.ToDouble(inputHeight.text) / 100;
-        double weight = Convert.ToDouble(inputWeight.text);
+        height = Convert.ToDouble(inputHeight.text) / 100;
+        weight = Convert.ToDouble(inputWeight.text);
 
-        double BMI = weight / (height * height) ;
+        BMI = weight / (height * height) ;
 
         outputBMI.text = "Your BMI: " + Math.Round(BMI, 1).ToString();
     }
@@ -38,13 +42,14 @@ public class UIScript : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        weight = 0;
+        height = 0;
+        BMI = 0;
+
         sliderHeight.maxValue = 300;    // cm
         sliderHeight.minValue = 100;    // cm
         sliderWeight.maxValue = 200;    // kg
         sliderWeight.minValue = 30;     // kg
-
-        inputHeight.text = "0";
-        inputWeight.text = "0";
     }
 
     // Update is called once per frame
