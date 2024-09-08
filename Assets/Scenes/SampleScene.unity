@@ -1056,7 +1056,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1170032171}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: ChangeAnimState, Assembly-CSharp
         m_MethodName: OnButtonClicked
         m_Mode: 3
@@ -1228,7 +1228,7 @@ MonoBehaviour:
   m_XROrigin: {fileID: 0}
   m_ExcludeUITouches: 1
   m_ARSessionOrigin: {fileID: 0}
-  m_PlacementPrefab: {fileID: 919132149155446097, guid: 37e9e60b4c14a7844a36845fb86a773b, type: 3}
+  m_PlacementPrefab: {fileID: 4676084185224843775, guid: 9fa8800ef0fa2744ea64fc1da1505f82, type: 3}
   m_FallbackLayerMask:
     serializedVersion: 2
     m_Bits: 0
@@ -1882,6 +1882,7 @@ GameObject:
   m_Component:
   - component: {fileID: 798118096}
   - component: {fileID: 798118095}
+  - component: {fileID: 798118097}
   m_Layer: 0
   m_Name: UiDataInputScript
   m_TagString: Untagged
@@ -1921,6 +1922,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &798118097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798118094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 650bb6f002151434aa639f9e8fb1c0e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 2111965792100389183, guid: 9fa8800ef0fa2744ea64fc1da1505f82, type: 3}
+  goChar: {fileID: 4676084185224843775, guid: 9fa8800ef0fa2744ea64fc1da1505f82, type: 3}
+  buttons:
+  - {fileID: 1188400861}
+  - {fileID: 1796059557}
+  - {fileID: 1260605137}
+  - {fileID: 569055603}
+  positions: {x: 0, y: 0, z: 0}
 --- !u!1 &883514135
 GameObject:
   m_ObjectHideFlags: 0
@@ -2087,7 +2108,6 @@ GameObject:
   - component: {fileID: 1170032170}
   - component: {fileID: 1170032169}
   - component: {fileID: 1170032168}
-  - component: {fileID: 1170032171}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -2145,25 +2165,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1170032171
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1170032167}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 650bb6f002151434aa639f9e8fb1c0e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  anim: {fileID: 0}
-  goChar: {fileID: 0}
-  buttons:
-  - {fileID: 1188400861}
-  - {fileID: 1796059557}
-  - {fileID: 1260605137}
-  positions: {x: 0, y: 0, z: 0}
 --- !u!1 &1188400859
 GameObject:
   m_ObjectHideFlags: 0
@@ -2247,7 +2248,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1170032171}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: ChangeAnimState, Assembly-CSharp
         m_MethodName: OnButtonClicked
         m_Mode: 3
@@ -2455,7 +2456,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1170032171}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: ChangeAnimState, Assembly-CSharp
         m_MethodName: OnButtonClicked
         m_Mode: 3
@@ -5522,7 +5523,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1170032171}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: ChangeAnimState, Assembly-CSharp
         m_MethodName: OnButtonClicked
         m_Mode: 3
