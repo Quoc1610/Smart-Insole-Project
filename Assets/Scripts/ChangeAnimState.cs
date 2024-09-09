@@ -3,48 +3,73 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChangeAnimState : MonoBehaviour
+namespace myScripts
 {
-    public Animator anim;
-    public GameObject goChar;
-    public List<Button> buttons= new List<Button>();
-    public Vector3 positions;
-    private void Start() {
-        positions=goChar.transform.position;
-    }
-    public void OnButtonClicked(int index)
+    public class ChangeAnimState : MonoBehaviour
     {
-        if(index == 0)
+        public static ChangeAnimState Instance;
+
+        public Animator anim;
+        public GameObject goChar;
+        public List<Button> buttons = new List<Button>();
+        public Vector3 positions;
+
+        private void Awake()
         {
-            anim.SetBool("IsWalk", true);
-            anim.SetBool("IsJog", false);
-            anim.SetBool("IsRun", false);
-            anim.SetBool("IsStair", false);
-            goChar.transform.position=positions;
+            Instance = this;
         }
-        else if(index == 1)
+        private void OnEnable()
         {
-            anim.SetBool("IsWalk", false);
-            anim.SetBool("IsJog", true);
-            anim.SetBool("IsRun", false);
-            anim.SetBool("IsStair", false);
-            goChar.transform.position=positions;
+            ARPlacementExtension.OnObjectPlacedEvent += OnObjectSpawned;
         }
-        else if(index == 2)
+
+        private void OnDisable()
         {
-            anim.SetBool("IsWalk", false);
-            anim.SetBool("IsJog", false);
-            anim.SetBool("IsRun", true);
-            anim.SetBool("IsStair", false);
-            goChar.transform.position=positions;
+            ARPlacementExtension.OnObjectPlacedEvent -= OnObjectSpawned;
         }
-        else if(index == 3)
+
+        public void OnObjectSpawned(GameObject obj)
         {
-            anim.SetBool("IsWalk", false);
-            anim.SetBool("IsJog", false);
-            anim.SetBool("IsRun", false);
-            anim.SetBool("IsStair", true);
-            goChar.transform.position=positions;
+            anim = obj.GetComponent<Animator>();
+        }
+
+        public void OnButtonClicked(int index)
+        {
+
+            switch (index)
+            {
+                case 0:
+                    anim.SetBool("IsWalk", true);
+                    anim.SetBool("IsJog", false);
+                    anim.SetBool("IsRun", false);
+                    anim.SetBool("IsStair", false);
+                    break;
+
+                case 1:
+                    anim.SetBool("IsWalk", false);
+                    anim.SetBool("IsJog", true);
+                    anim.SetBool("IsRun", false);
+                    anim.SetBool("IsStair", false);
+                    break;
+
+                case 2:
+                    anim.SetBool("IsWalk", false);
+                    anim.SetBool("IsJog", false);
+                    anim.SetBool("IsRun", true);
+                    anim.SetBool("IsStair", false);
+                    break;
+
+                case 3:
+                    anim.SetBool("IsWalk", false);
+                    anim.SetBool("IsJog", false);
+                    anim.SetBool("IsRun", false);
+                    anim.SetBool("IsStair", true);
+                    break;
+
+                default:
+                    Debug.LogWarning("Invalid button index.");
+                    break;
+            }
         }
     }
 }
