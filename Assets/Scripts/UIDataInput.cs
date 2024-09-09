@@ -4,6 +4,8 @@ using UnityEngine;
 using TMPro;
 using System;
 using UnityEngine.UI;
+using UnityEditor;
+using Unity.VisualScripting;
 
 public class UIScript : MonoBehaviour
 {
@@ -12,6 +14,7 @@ public class UIScript : MonoBehaviour
     public TMP_InputField inputWeight;      // in kg
     public Slider sliderHeight;
     public Slider sliderWeight;
+    public GameObject model;
 
     double height;
     double weight;
@@ -20,6 +23,7 @@ public class UIScript : MonoBehaviour
 
     public void ButtonSubmit()
     {
+        
 
     }
 
@@ -27,6 +31,8 @@ public class UIScript : MonoBehaviour
     {
         height = Convert.ToDouble(inputHeight.text) / 100;
         weight = Convert.ToDouble(inputWeight.text);
+
+        model.transform.localScale = new Vector3((float)(weight * 0.03), (float)(height * 0.65), 3);
 
         BMI = weight / (height * height) ;
 
@@ -61,7 +67,7 @@ public class UIScript : MonoBehaviour
         height = 0;
         BMI = 0;
 
-        sliderHeight.maxValue = 300;    // cm
+        sliderHeight.maxValue = 200;    // cm
         sliderHeight.minValue = 100;    // cm
         sliderWeight.maxValue = 200;    // kg
         sliderWeight.minValue = 30;     // kg
