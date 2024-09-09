@@ -7,6 +7,8 @@ public class ChangeAnimState : MonoBehaviour
 {
     public Animator anim;
     public GameObject goChar;
+    private GameObject spawnChar;
+    private Animator spawnAnim;
     public List<Button> buttons= new List<Button>();
     public Vector3 positions;
     private void Start() {
@@ -14,37 +16,39 @@ public class ChangeAnimState : MonoBehaviour
     }
     public void OnButtonClicked(int index)
     {
-        if(index == 0)
+        Debug.Log("!"+index.ToString());
+        spawnChar = GameObject.FindGameObjectWithTag("Character");
+        Debug.Log("!Run");
+        spawnAnim = spawnChar.GetComponent<Animator>();
+        if (index == 0)
         {
-            anim.SetBool("IsWalk", true);
-            anim.SetBool("IsJog", false);
-            anim.SetBool("IsRun", false);
-            anim.SetBool("IsStair", false);
-            goChar.transform.position=positions;
+            spawnAnim.SetTrigger("Walk");
+            spawnAnim.SetBool("IsWalk", true);
+            spawnAnim.SetBool("IsJog", false);
+            spawnAnim.SetBool("IsRun", false);
+            spawnAnim.SetBool("IsStair", false);
         }
-        else if(index == 1)
+        else if (index == 1)
         {
-            anim.SetBool("IsWalk", false);
-            anim.SetBool("IsJog", true);
-            anim.SetBool("IsRun", false);
-            anim.SetBool("IsStair", false);
-            goChar.transform.position=positions;
+            spawnAnim.SetBool("IsWalk", false);
+            spawnAnim.SetBool("IsJog", true);
+            spawnAnim.SetBool("IsRun", false);
+            spawnAnim.SetBool("IsStair", false);
         }
-        else if(index == 2)
+        else if (index == 2)
         {
-            anim.SetBool("IsWalk", false);
-            anim.SetBool("IsJog", false);
-            anim.SetBool("IsRun", true);
-            anim.SetBool("IsStair", false);
-            goChar.transform.position=positions;
+            spawnAnim.SetBool("IsWalk", false);
+            spawnAnim.SetBool("IsJog", false);
+            spawnAnim.SetBool("IsRun", true);
+            spawnAnim.SetBool("IsStair", false);
         }
-        else if(index == 3)
+        else if (index == 3)
         {
-            anim.SetBool("IsWalk", false);
-            anim.SetBool("IsJog", false);
-            anim.SetBool("IsRun", false);
-            anim.SetBool("IsStair", true);
-            goChar.transform.position=positions;
+            spawnAnim.SetBool("IsWalk", false);
+            spawnAnim.SetBool("IsJog", false);
+            spawnAnim.SetBool("IsRun", false);
+            spawnAnim.SetBool("IsStair", true);
         }
+
     }
 }
