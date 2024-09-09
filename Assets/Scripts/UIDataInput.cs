@@ -32,7 +32,9 @@ public class UIScript : MonoBehaviour
         height = Convert.ToDouble(inputHeight.text) / 100;
         weight = Convert.ToDouble(inputWeight.text);
 
-        model.transform.localScale = new Vector3((float)(weight * 0.03), (float)(height * 0.65), 3);
+        // Average Height of men is 170cm (scale y = 1)
+        // scale y = height / avg height
+        model.transform.localScale = new Vector3((float)(weight * 0.03), (float)(height / 1.7), 3);
 
         BMI = weight / (height * height) ;
 
