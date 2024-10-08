@@ -1,4 +1,5 @@
 using M2MqttUnity;
+using myScripts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -94,7 +95,7 @@ public class MqttLib : M2MqttUnityClient
 
     protected override void SubscribeTopics()
     {
-        client.Subscribe(new string[] { "NPNLab_BBC/feeds/button1" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+        client.Subscribe(new string[] { "DSA451/feeds/test" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
     }
 
     protected override void UnsubscribeTopics()
@@ -179,6 +180,18 @@ public class MqttLib : M2MqttUnityClient
         Debug.Log("***Received: " + msg);
         objText.SetText(msg);
         StoreMessage(msg);
+
+        int index = 0;
+        try
+        {
+            index = int.Parse(msg);
+        }
+        catch (Exception e)
+        {
+            index = 0;
+        }
+        ChangeAnimState.Instance.OnButtonClicked(index);
+
         if (topic == "M2MQTT_Unity/test")
         {
             if (autoTest)
