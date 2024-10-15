@@ -30,7 +30,7 @@ public class MqttLib : M2MqttUnityClient
     public void TestPublish()
     {
         //client.Publish("M2MQTT_Unity/test", System.Text.Encoding.UTF8.GetBytes("Test message"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-        client.Publish("NPNLab_BBC/feeds/ai", System.Text.Encoding.UTF8.GetBytes("Test message"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+        client.Publish("DSA451/feeds/test", System.Text.Encoding.UTF8.GetBytes("Test message"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
 
         Debug.Log("Test message published");
         AddUiMessage("Test message published.");
@@ -100,7 +100,7 @@ public class MqttLib : M2MqttUnityClient
 
     protected override void UnsubscribeTopics()
     {
-        client.Unsubscribe(new string[] { "M2MQTT_Unity/test" });
+        client.Unsubscribe(new string[] { "DSA451/feeds/test" });
     }
 
     protected override void OnConnectionFailed(string errorMessage)
@@ -177,7 +177,9 @@ public class MqttLib : M2MqttUnityClient
     protected override void DecodeMessage(string topic, byte[] message)
     {
         string msg = System.Text.Encoding.UTF8.GetString(message);
-        Debug.Log("***Received: " + msg);
+        Debug.Log("***Received: " + message);
+        JsonData jsonData = JsonUtility.FromJson<JsonData>(msg);
+       
         objText.SetText(msg);
         StoreMessage(msg);
 
@@ -192,7 +194,7 @@ public class MqttLib : M2MqttUnityClient
         }
         ChangeAnimState.Instance.OnButtonClicked(index);
 
-        if (topic == "M2MQTT_Unity/test")
+        if (topic == "DSA451/feeds/test")
         {
             if (autoTest)
             {
@@ -242,4 +244,11 @@ public class MqttLib : M2MqttUnityClient
             autoConnect = true;
         }
     }
+}
+[Serializable]
+public class JsonData
+{
+    public string sensor;
+    public float value; 
+    public string unit;
 }
