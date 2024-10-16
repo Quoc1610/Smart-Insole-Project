@@ -14,9 +14,10 @@ public class UIInApp : MonoBehaviour
     public Slider sliderStepLength;
     public Slider sliderScale;
     public TextMeshProUGUI txtSpeed;
-    public GameObject goChar;
+    public List<GameObject> lsGOChar=new List<GameObject>();
     public Vector3 v3CharScale;
     public TextMeshProUGUI txtStepLength;
+    public int indexgoChar;
     public void OnSetUp(){
         btnPopUp[0].gameObject.SetActive(true);
         btnPopUp[1].gameObject.SetActive(false);
@@ -27,9 +28,10 @@ public class UIInApp : MonoBehaviour
         sliderStepLength.minValue=0;
         sliderScale.maxValue=1;
         sliderScale.minValue=0;
-        v3CharScale=goChar.transform.localScale;
     }
-
+    public void OnSetUpScale(){
+        v3CharScale=lsGOChar[indexgoChar].transform.localScale;
+    }
     public void OnSliderSpeedChange()
     {
         //todo
@@ -40,8 +42,11 @@ public class UIInApp : MonoBehaviour
     }
     public void OnSliderScaleChange()
     {
-        goChar.transform.localScale=v3CharScale;
-        goChar.transform.localScale=goChar.transform.localScale*(1+sliderScale.value);
+        
+        lsGOChar[indexgoChar].transform.localScale=v3CharScale;
+        Debug.Log("v3CharScale: "+v3CharScale);
+        Debug.Log("lsGOChar[indexgoChar].transform.localScale: "+lsGOChar[indexgoChar].transform.localScale);
+        lsGOChar[indexgoChar].transform.localScale= lsGOChar[indexgoChar].transform.localScale*(1+sliderScale.value);
     }
     public void OnBtnPopUpClick(int index){
         if(index==0){
