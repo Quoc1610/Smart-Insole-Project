@@ -4,15 +4,15 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     public UIMainMenu uiMainMenu;
-    public UIInApp uiInApp;
+    public GameObject goJoystick;
     public static UIManager _instance { get; private set; }
+    private void Start() {
+        _instance = this;
+        goJoystick.SetActive(false);
+        
+    }
     public void OnLoadGameScene()
     {
         uiMainMenu.gameObject.SetActive(false);
-        uiInApp.gameObject.SetActive(true);
-    }
-    private void Start() {
-        OnLoadGameScene();
-        uiInApp.OnSetUp();
     }
 }
