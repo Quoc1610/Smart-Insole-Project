@@ -48,6 +48,12 @@ public class UIInApp : MonoBehaviour
         Debug.Log("lsGOChar[indexgoChar].transform.localScale: "+lsGOChar[indexgoChar].transform.localScale);
         lsGOChar[indexgoChar].transform.localScale= lsGOChar[indexgoChar].transform.localScale*(1+sliderScale.value);
     }
+
+    public void OnBtnHomeClick()
+    {
+        // TODO
+        // Go back to main menu
+    }
     public void OnBtnPopUpClick(int index){
         if(index==0){
             btnPopUp[0].gameObject.SetActive(false);
