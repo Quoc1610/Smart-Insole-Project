@@ -23,6 +23,7 @@ public class UIMainMenu : MonoBehaviour
         goImgTarget.SetActive(true);
         goPlain.SetActive(false);
         UIManager._instance.uiInApp.indexgoChar = 0;
+        UIManager._instance.uiInApp.lsGOChar[0].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionY;
         UIManager._instance.uiInApp.OnSetUpScale();
         UIManager._instance.goJoystick.SetActive(true);
         this.gameObject.SetActive(false);
@@ -35,6 +36,7 @@ public class UIMainMenu : MonoBehaviour
         goImgTarget.SetActive(false);
         goPlain.SetActive(true);
         UIManager._instance.uiInApp.indexgoChar = 1;
+        UIManager._instance.uiInApp.lsGOChar[1].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionY;
         UIManager._instance.uiInApp.OnSetUpScale();
         UIManager._instance.goJoystick.SetActive(true);
         this.gameObject.SetActive(false);
