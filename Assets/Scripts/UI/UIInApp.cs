@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEditor;
+using FIMSpace;
+using FIMSpace.RagdollAnimatorDemo;
 
 public class UIInApp : MonoBehaviour
 {
@@ -17,13 +19,15 @@ public class UIInApp : MonoBehaviour
     public List<GameObject> lsGOChar=new List<GameObject>();
     public Vector3 v3CharScale;
     public TextMeshProUGUI txtStepLength;
+    public List<FBasic_RigidbodyMover> lsfBasic_RigidbodyMover=new List<FBasic_RigidbodyMover>();
+
     public int indexgoChar;
     public void OnSetUp(){
         btnPopUp[0].gameObject.SetActive(true);
         btnPopUp[1].gameObject.SetActive(false);
         goPopUp.SetActive(false);
-        sliderSpeed.maxValue=1;
-        sliderSpeed.minValue=0;
+        sliderSpeed.maxValue=5;
+        sliderSpeed.minValue=1;
         sliderStepLength.maxValue=1;
         sliderStepLength.minValue=0;
         sliderScale.maxValue=1;
@@ -35,10 +39,14 @@ public class UIInApp : MonoBehaviour
     public void OnSliderSpeedChange()
     {
         //todo
+        txtSpeed.text="Speed: "+sliderSpeed.value.ToString("F2");
+        lsfBasic_RigidbodyMover[indexgoChar].speedAnim=sliderSpeed.value;
     }
     public void OnSliderStepChange()
     {
         //todo
+        txtStepLength.text="Step Length: "+sliderStepLength.value.ToString("F2");
+        lsfBasic_RigidbodyMover[indexgoChar].stepLength=sliderStepLength.value;
     }
     public void OnSliderScaleChange()
     {
