@@ -249,9 +249,9 @@ namespace FIMSpace.RagdollAnimatorDemo
 
             if (wasRootmotion == false)
             {
-                if (Rigb.isKinematic == false) Rigb.velocity = targetVelo;
+                //if (Rigb.isKinematic == false) Rigb.velocity = targetVelo;
                 Mecanim.speed = speedAnim;
-                //if ( Rigb.isKinematic == false) Rigb.velocity = new Vector3(0, 0, 0);
+                if ( Rigb.isKinematic == false) Rigb.velocity = new Vector3(0, 0, 0);
             }
 
             if (FixedRotation)
