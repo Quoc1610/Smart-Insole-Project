@@ -678,18 +678,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d7f7739a2db1944b90565ee8de92b5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stepLength: 0
-  speedAnim: 1
-  IsBusyProperty: 
-  DisableRootMotion: 0
-  Mecanim: {fileID: 0}
-  UpdateInput: 1
-  JumpPower: 3
-  HoldShiftForSpeed: 0
-  HoldCtrlForSpeed: 0
-  doubleTapTimeThreshold: 0.3
   movementJoystick: {fileID: 1278005108}
-  playerSpeed: 1
+  lsfBasic_RigidbodyMover: {fileID: 0}
 --- !u!65 &214944503
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1238,8 +1228,12 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 604693092786898713, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 604693092786898713, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
+      propertyPath: movementJoystick
+      value: 
+      objectReference: {fileID: 1278005108}
     - target: {fileID: 7023648884995387364, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.043
@@ -1293,6 +1287,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7418477587794328377, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
+      propertyPath: m_Constraints
+      value: 84
+      objectReference: {fileID: 0}
+    - target: {fileID: 7418477587794328377, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
       propertyPath: m_Interpolate
       value: 0
       objectReference: {fileID: 0}
@@ -1305,14 +1303,9 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7652411668022408542, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 530058956}
+      insertIndex: 5
+      addedObject: {fileID: 530058960}
   m_SourcePrefab: {fileID: 100100000, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
---- !u!95 &393298461 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 4006285734411122078, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
-  m_PrefabInstance: {fileID: 393298460}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &426158162 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 476138, guid: c838be5f7abd9c64db9643ebadf0c932, type: 3}
@@ -1753,7 +1746,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 393298460}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 530058949}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5801e28e1e70b6046891201f31ab875c, type: 3}
   m_Name: 
@@ -1763,30 +1756,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7023648884995387364, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
   m_PrefabInstance: {fileID: 393298460}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &530058956
+--- !u!114 &530058960
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 530058949}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1d7f7739a2db1944b90565ee8de92b5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stepLength: 0
-  speedAnim: 1
-  IsBusyProperty: 
-  DisableRootMotion: 0
-  Mecanim: {fileID: 393298461}
-  UpdateInput: 1
-  JumpPower: 3
-  HoldShiftForSpeed: 0
-  HoldCtrlForSpeed: 0
-  doubleTapTimeThreshold: 0.3
   movementJoystick: {fileID: 1278005108}
-  playerSpeed: 2
+  lsfBasic_RigidbodyMover: {fileID: 530058950}
 --- !u!224 &566375134 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3531206585220228812, guid: cab6f9a0d029b8b41ae3ca1f1b7192b3, type: 3}
@@ -3008,18 +2991,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d7f7739a2db1944b90565ee8de92b5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stepLength: 0
-  speedAnim: 1
-  IsBusyProperty: 
-  DisableRootMotion: 0
-  Mecanim: {fileID: 0}
-  UpdateInput: 1
-  JumpPower: 3
-  HoldShiftForSpeed: 0
-  HoldCtrlForSpeed: 0
-  doubleTapTimeThreshold: 0.3
   movementJoystick: {fileID: 1278005108}
-  playerSpeed: 1
+  lsfBasic_RigidbodyMover: {fileID: 0}
 --- !u!65 &948307261
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4478,8 +4451,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 948307258}
-  - {fileID: 530058955}
   - {fileID: 902734654}
+  - {fileID: 530058955}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1726817462
@@ -5551,9 +5524,21 @@ PrefabInstance:
     m_TransformParent: {fileID: 1922231172}
     m_Modifications:
     - target: {fileID: 604693092786898713, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
-      propertyPath: m_Enabled
+      propertyPath: Interia
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 604693092786898713, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 604693092786898713, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
+      propertyPath: FixedRotation
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 604693092786898713, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
+      propertyPath: movementJoystick
+      value: 
+      objectReference: {fileID: 1278005108}
     - target: {fileID: 7023648884995387364, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.043
@@ -5611,6 +5596,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7418477587794328377, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
+      propertyPath: m_Constraints
+      value: 84
+      objectReference: {fileID: 0}
+    - target: {fileID: 7418477587794328377, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
       propertyPath: m_Interpolate
       value: 0
       objectReference: {fileID: 0}
@@ -5623,8 +5612,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7652411668022408542, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1972084920}
+      insertIndex: 5
+      addedObject: {fileID: 1972084923}
   m_SourcePrefab: {fileID: 100100000, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
 --- !u!1 &1972084916 stripped
 GameObject:
@@ -5642,17 +5631,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 1972084915}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1972084916}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5801e28e1e70b6046891201f31ab875c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!95 &1972084919 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 4006285734411122078, guid: 0c88752470244c6419a399a46c2a690f, type: 3}
-  m_PrefabInstance: {fileID: 1972084915}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1972084920
+--- !u!114 &1972084923
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5664,18 +5648,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d7f7739a2db1944b90565ee8de92b5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stepLength: 0
-  speedAnim: 1
-  IsBusyProperty: 
-  DisableRootMotion: 0
-  Mecanim: {fileID: 1972084919}
-  UpdateInput: 1
-  JumpPower: 3
-  HoldShiftForSpeed: 0
-  HoldCtrlForSpeed: 0
-  doubleTapTimeThreshold: 0.3
   movementJoystick: {fileID: 1278005108}
-  playerSpeed: 2
+  lsfBasic_RigidbodyMover: {fileID: 1972084918}
 --- !u!1 &1992593340
 GameObject:
   m_ObjectHideFlags: 0

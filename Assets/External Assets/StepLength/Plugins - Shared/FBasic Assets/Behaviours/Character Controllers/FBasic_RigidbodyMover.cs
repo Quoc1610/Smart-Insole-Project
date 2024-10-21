@@ -11,6 +11,7 @@ namespace FIMSpace.RagdollAnimatorDemo
         public float speedAnim = 1f;
         private float timer = 0f;
         public Rigidbody Rigb;
+        public Joystick movementJoystick;
 
         [Space(4)]
         public float MovementSpeed = 2f;
@@ -87,7 +88,7 @@ namespace FIMSpace.RagdollAnimatorDemo
             if (Rigb)
             {
                 Rigb.maxAngularVelocity = 30f;
-                if (Rigb.interpolation == RigidbodyInterpolation.None) Rigb.interpolation = RigidbodyInterpolation.Interpolate;
+                //if (Rigb.interpolation == RigidbodyInterpolation.None) Rigb.interpolation = RigidbodyInterpolation.Interpolate;
                 Rigb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
             }
 
@@ -137,6 +138,7 @@ namespace FIMSpace.RagdollAnimatorDemo
             if (Rigb == null) return;
 
             bool updateMovement = true;
+            bool standDown = false;
             if (Mecanim) if (string.IsNullOrWhiteSpace(IsBusyProperty) == false) updateMovement = !Mecanim.GetBool(IsBusyProperty);
             if (UpdateInput && updateMovement)
             {
@@ -151,11 +153,26 @@ namespace FIMSpace.RagdollAnimatorDemo
 
                 moveDirectionLocal = Vector2.zero;
 
-                if (Input.GetKey(KeyCode.A)) moveDirectionLocal += Vector2.left;
-                else if (Input.GetKey(KeyCode.D)) moveDirectionLocal += Vector2.right;
+                // Add code
+                if (movementJoystick)
+                {
+                    moveDirectionLocal.x = movementJoystick.Direction.x;
+                    moveDirectionLocal.y = movementJoystick.Direction.y;
+                }
+                else
+                {
+                    if (Input.GetKey(KeyCode.A)) moveDirectionLocal += Vector2.left;
+                    else if (Input.GetKey(KeyCode.D)) moveDirectionLocal += Vector2.right;
 
-                if (Input.GetKey(KeyCode.W)) moveDirectionLocal += Vector2.up;
-                else if (Input.GetKey(KeyCode.S)) moveDirectionLocal += Vector2.down;
+                    if (Input.GetKey(KeyCode.W)) moveDirectionLocal += Vector2.up;
+                    else if (Input.GetKey(KeyCode.S)) moveDirectionLocal += Vector2.down;
+                }
+
+                //if (Input.GetKey(KeyCode.A)) moveDirectionLocal += Vector2.left;
+                //else if (Input.GetKey(KeyCode.D)) moveDirectionLocal += Vector2.right;
+
+                //if (Input.GetKey(KeyCode.W)) moveDirectionLocal += Vector2.up;
+                //else if (Input.GetKey(KeyCode.S)) moveDirectionLocal += Vector2.down;
 
                 Quaternion flatCamRot = Quaternion.Euler(0f, Camera.main.transform.eulerAngles.y, 0f);
 
@@ -169,8 +186,12 @@ namespace FIMSpace.RagdollAnimatorDemo
                 {
                     moveDirectionWorld = Vector3.zero;
                 }
-
-                moveDirectionWorld = new Vector3(Mathf.Abs(stepLength), 0f, 0f);
+                Debug.Log("FBasic: " + moveDirectionWorld.ToString());
+                if (moveDirectionWorld == Vector3.zero)
+                {
+                    moveDirectionWorld = new Vector3(Mathf.Abs(stepLength), 0f, 0f);
+                    standDown = true;
+                }
                 if (moveDirectionWorld != Vector3.zero) targetInstantRotation = Quaternion.LookRotation(moveDirectionWorld);
             }
             else if (updateMovement == false) moveDirectionWorld = Vector3.zero;
@@ -203,9 +224,30 @@ namespace FIMSpace.RagdollAnimatorDemo
             float accel = 5f * MovementSpeed;
             if (!moving) accel = 7f * MovementSpeed;
             if (Interia < 1f)
+            {
+                //Debug.Log("currentWorldAccel: " + currentWorldAccel);
+                //Debug.Log("moveDirectionWorld: " + moveDirectionWorld);
+                //Debug.Log("spd: " + spd);
+                //Debug.Log("Interia: " + Interia);
                 currentWorldAccel = Vector3.Lerp(Vector3.Slerp(currentWorldAccel, moveDirectionWorld * spd, Time.deltaTime * accel), Vector3.MoveTowards(currentWorldAccel, moveDirectionWorld * spd, Time.deltaTime * accel), Interia);
+                Debug.Log("Small: " + currentWorldAccel.ToString());
+            }
             else
+            {
+                //Debug.Log("currentWorldAccel: " + currentWorldAccel);
+                //Debug.Log("moveDirectionWorld: " + moveDirectionWorld);
+                //Debug.Log("spd: " + spd);
+                //Debug.Log("Interia: " + Interia);
                 currentWorldAccel = Vector3.MoveTowards(currentWorldAccel, moveDirectionWorld * spd, Time.deltaTime * accel);
+                Debug.Log("Larger: " + currentWorldAccel.ToString());
+            }
+
+            // Add code
+            if (!standDown)
+            {
+                transform.localPosition += currentWorldAccel * 0.0005f;
+                transform.rotation = targetInstantRotation;
+            }
 
             if (Mecanim) if (moving) Mecanim.SetFloat("Speed", currentWorldAccel.magnitude);
             moveDirectionWorld = Vector3.zero;
