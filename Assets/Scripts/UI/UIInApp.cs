@@ -13,9 +13,11 @@ public class UIInApp : MonoBehaviour
     public List<Button> btnPopUp=new List<Button>();
     public GameObject goPopUp;
     public Slider sliderSpeed;
+    public Slider sliderMoveSpeed;
     public Slider sliderStepLength;
     public Slider sliderScale;
     public TextMeshProUGUI txtSpeed;
+    public TextMeshProUGUI txtMoveSpeed;    
     public List<GameObject> lsGOChar=new List<GameObject>();
     public Vector3 v3CharScale;
     public TextMeshProUGUI txtStepLength;
@@ -32,6 +34,8 @@ public class UIInApp : MonoBehaviour
         sliderStepLength.minValue=0;
         sliderScale.maxValue=1;
         sliderScale.minValue=0;
+        sliderMoveSpeed.maxValue=5;
+        sliderMoveSpeed.minValue=2;
     }
     public void OnSetUpScale(){
         v3CharScale=lsGOChar[indexgoChar].transform.localScale;
@@ -47,6 +51,12 @@ public class UIInApp : MonoBehaviour
         //todo
         txtStepLength.text="Step Length: "+sliderStepLength.value.ToString("F2");
         lsfBasic_RigidbodyMover[indexgoChar].stepLength=sliderStepLength.value;
+    }
+    public void OnSliderMoveSpeedChange()
+    {
+        //todo
+        txtMoveSpeed.text="Move Speed: "+sliderMoveSpeed.value.ToString("F2");
+        lsfBasic_RigidbodyMover[indexgoChar].MovementSpeed=sliderMoveSpeed.value;
     }
     public void OnSliderScaleChange()
     {
