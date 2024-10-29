@@ -24,42 +24,58 @@ public class Tile : Button
         gridX = x;
         gridY = y;
         parentScript = parent;
-        onClick.AddListener(() => OnClicked(20));
+        onClick.AddListener(() => OnClicked(10));
     }
 
     public void OnClicked(int value)
     {
+        if(realValue == 100)
+        {
+            return;
+        }
         realValue = Mathf.Clamp(realValue + value, 0, 100); 
+        if(realValue>=100)
+        {
+            realValue = 100;
+        }
         txtValue.text = realValue.ToString();
         image.color = GetColorBasedOnValue(realValue);
-        parentScript.ActOnNeighbors(gridX, gridY, 5,value);
+        parentScript.ActOnNeighbors(gridX, gridY, 10,value);
     }
     public void UpdateValue(int value)
     {
+        if(value >= 100)
+        {
+            value = 100;
+        }
         realValue = value;
         txtValue.text = realValue.ToString();
         image.color = GetColorBasedOnValue(realValue);
     }
-    public Color GetColorBasedOnValue(int value)
+    public Color GetColorBasedOnValue(int Invalue)
     {
-        if(value==0){
-            return Color.white;
-        }
-        else if (value <= 25)
+        float value = Invalue / 100f;
+        if (value < 0 || value > 1)
         {
-            return Color.blue;
+            Debug.LogWarning("Value should be between 0 and 1.");
+            return Color.white; 
         }
-        else if (value <= 50)
+
+        if (value <= 0.5f)
         {
-            return Color.green;
+            float t = value / 0.5f;
+            return new Color(0, t, 1 - t); 
         }
-        else if (value <= 75)
+        else if (value <= 0.75f)
         {
-            return Color.yellow;
+
+            float t = (value - 0.5f) / 0.25f;
+            return new Color(t, 1, 0); 
         }
         else
         {
-            return Color.red;
+            float t = (value - 0.75f) / 0.25f; 
+            return new Color(1, 1 - t, 0);
         }
     }
 }

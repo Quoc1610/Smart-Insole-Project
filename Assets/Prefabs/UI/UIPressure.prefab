@@ -89,8 +89,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc6f15d8c36f91409add2279283a6c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  width: 9
-  height: 30
+  width: 20
+  height: 50
   tilePrefab: {fileID: 1035192279985882933, guid: bf8004d637813534ab0594d55a85d0e7, type: 3}
   goLeftFoot: {fileID: 3112016697879573921}
 --- !u!1 &3112016697879573921

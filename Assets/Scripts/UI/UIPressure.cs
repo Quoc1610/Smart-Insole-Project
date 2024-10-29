@@ -62,7 +62,7 @@ public class UIPressure : MonoBehaviour
                     if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height)
                     {
                         Tile neighborTile = gridTiles[neighborX, neighborY];
-                        int value = baseValue - (manhattanDistance * 5);
+                        int value = baseValue - (manhattanDistance * 1);
                         if (value < 0)
                         {
                             value = 0;
