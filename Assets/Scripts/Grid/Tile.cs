@@ -55,7 +55,7 @@ public class Tile : Button
     public Color GetColorBasedOnValue(int Invalue)
     {
         float value = Invalue / 100f;
-        if (value < 0 || value > 1)
+        if (value <= 0 || value > 1)
         {
             Debug.LogWarning("Value should be between 0 and 1.");
             return Color.white; 
