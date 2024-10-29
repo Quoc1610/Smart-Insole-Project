@@ -5,6 +5,7 @@ public class UIManager : MonoBehaviour
 {
     public UIMainMenu uiMainMenu;
     public UIInApp uiInApp;
+    public UIPressure uiPressure;
     public GameObject goJoystick;
     public static UIManager _instance { get; private set; }
     private void Awake() {
@@ -18,9 +19,13 @@ public class UIManager : MonoBehaviour
             GameObject.Destroy(this.gameObject);
         }
         uiInApp.gameObject.SetActive(false);
+        
         uiInApp.OnSetUp();
         goJoystick.SetActive(false);
         
+    }
+    private void Start() {
+        uiPressure.OnSetUp();
     }
     public void OnLoadGameScene()
     {
