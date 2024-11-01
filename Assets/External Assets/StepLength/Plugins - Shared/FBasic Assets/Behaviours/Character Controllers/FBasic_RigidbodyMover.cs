@@ -186,7 +186,7 @@ namespace FIMSpace.RagdollAnimatorDemo
                 {
                     moveDirectionWorld = Vector3.zero;
                 }
-                Debug.Log("FBasic: " + moveDirectionWorld.ToString());
+                //Debug.Log("FBasic: " + moveDirectionWorld.ToString());
                 if (moveDirectionWorld == Vector3.zero)
                 {
                     moveDirectionWorld = new Vector3(Mathf.Abs(stepLength), 0f, 0f);
@@ -230,7 +230,7 @@ namespace FIMSpace.RagdollAnimatorDemo
                 //Debug.Log("spd: " + spd);
                 //Debug.Log("Interia: " + Interia);
                 currentWorldAccel = Vector3.Lerp(Vector3.Slerp(currentWorldAccel, moveDirectionWorld * spd, Time.deltaTime * accel), Vector3.MoveTowards(currentWorldAccel, moveDirectionWorld * spd, Time.deltaTime * accel), Interia);
-                Debug.Log("Small: " + currentWorldAccel.ToString());
+                //Debug.Log("Small: " + currentWorldAccel.ToString());
             }
             else
             {
@@ -239,7 +239,7 @@ namespace FIMSpace.RagdollAnimatorDemo
                 //Debug.Log("spd: " + spd);
                 //Debug.Log("Interia: " + Interia);
                 currentWorldAccel = Vector3.MoveTowards(currentWorldAccel, moveDirectionWorld * spd, Time.deltaTime * accel);
-                Debug.Log("Larger: " + currentWorldAccel.ToString());
+                //Debug.Log("Larger: " + currentWorldAccel.ToString());
             }
 
             // Add code

@@ -28,12 +28,12 @@ public class JoystickMove : MonoBehaviour
 
         if (direction.magnitude >= 0.1f)
         {
-            Debug.Log("Joystick: " + direction.ToString());
+            //Debug.Log("Joystick: " + direction.ToString());
             //lsfBasic_RigidbodyMover.moveDirectionWorld = direction;
         }
         else
         {
-            Debug.Log("Joystick: " + Vector3.zero.ToString());
+            //Debug.Log("Joystick: " + Vector3.zero.ToString());
             //lsfBasic_RigidbodyMover.moveDirectionWorld = Vector3.zero;
         }
     }
