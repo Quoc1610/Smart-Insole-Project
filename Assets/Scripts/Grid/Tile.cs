@@ -24,7 +24,7 @@ public class Tile : Button
         gridX = x;
         gridY = y;
         parentScript = parent;
-        onClick.AddListener(() => OnClicked(10));
+        onClick.AddListener(() => OnClicked(20));
     }
 
     public void OnClicked(int value)
@@ -40,7 +40,7 @@ public class Tile : Button
         }
         txtValue.text = realValue.ToString();
         image.color = GetColorBasedOnValue(realValue);
-        parentScript.ActOnNeighbors(gridX, gridY, 10,value);
+        parentScript.ActOnNeighbors(gridX, gridY, 50,value);
     }
     public void UpdateValue(int value)
     {
