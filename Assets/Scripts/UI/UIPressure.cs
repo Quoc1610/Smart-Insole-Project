@@ -15,8 +15,10 @@ public class UIPressure : MonoBehaviour
     private int[,] resizedMatrix;
 
     public Terrain terrain;
-    public TerrainLayer terrainLayer; // Reference to the Terrain Layer for coloring
     public int heightScale = 100;
+
+    [Tooltip("Set value at 2^x+1. Ex: 33, 65, 129, ...")]
+    public int resolution = 65;
 
     int[,] ReadMatrixFromFile(string filePath)
     {
@@ -76,13 +78,15 @@ public class UIPressure : MonoBehaviour
 
         // Set the heights of the terrain based on the normalized matrix
         terrain.terrainData.size = new Vector3(heights.GetLength(0), heightScale * maxHeight / 100, heights.GetLength(1)); // Set terrain size
-        //terrain.terrainData.heightmapResolution = width; // Set heightmap resolution
+
+        terrain.terrainData.heightmapResolution = resolution;
         Debug.Log(terrain.terrainData.heightmapResolution);
+
         terrain.terrainData.SetHeights(0, 0, heights); // Set heights based on the normalized matrix values
 
         // Assign the Terrain Layer to the Terrain
 
-        terrain.terrainData.terrainLayers = new TerrainLayer[] { new TerrainLayer() };
+        terrain.terrainData.terrainLayers = new TerrainLayer[] { new TerrainLayer(), new TerrainLayer(), new TerrainLayer() };
         terrain.terrainData.RefreshPrototypes();
 
         // Apply the Terrain Layer to the terrain based on height values
@@ -176,26 +180,32 @@ public class UIPressure : MonoBehaviour
     private void ApplyColorBasedOnHeight()
     {
         int numLayers = terrain.terrainData.alphamapLayers;
-        Debug.Log(numLayers);
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                Tile tmpTile = gridTiles[x, y];
-                Color color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);// Calculate color based on height value
-                                                                              // Create a 3D float array with alpha values for each terrain layer
-                float[,,] alphaMaps = new float[1, 1, numLayers];
+        Debug.Log(terrain.terrainData.alphamapWidth);
+        Debug.Log(terrain.terrainData.alphamapHeight);
+        //float[,,] alphaMaps = new float[terrain.terrainData.alphamapWidth, terrain.terrainData.alphamapHeight, terrain.terrainData.alphamapLayers];
+        //for (int y = 0; y < terrain.terrainData.alphamapHeight; y++)
+        //{
+        //    for (int x = 0; x < terrain.terrainData.alphamapWidth; x++)
+        //    {
+        //        float value = terrain.terrainData.GetHeight(y, x);
+        //        Tile tmpTile = gridTiles[0, 0];
+        //        Color color = tmpTile.GetColorBasedOnValue((int)((value / heightScale) * 100));
 
-                // Set the red, green, blue, and alpha channel values for the color
-                //alphaMaps[0, 0, 0] = color.r; // Red channel value
-                //alphaMaps[0, 0, 1] = color.g; // Green channel value
-                //alphaMaps[0, 0, 2] = color.b; // Blue channel value
-                alphaMaps[0, 0, 0] = color.a; // Alpha channel value
+        //        // Create a 3D float array with alpha values for each terrain layer
 
-                // Set the alpha values for the terrain at the specified location
-                terrain.terrainData.SetAlphamaps(x, y, alphaMaps);
-            }
-        }
+
+        //        // Determine the mix of textures based on the color
+        //        Vector3 splat = new Vector3(color.r, color.g, color.b);
+        //        //splat.Normalize();
+
+        //        // Assign the normalized color values to the alphaMaps array
+        //        alphaMaps[0, 0, 0] = splat.x; // Red channel value
+        //        alphaMaps[0, 0, 1] = splat.y; // Green channel value
+        //        alphaMaps[0, 0, 2] = splat.z; // Blue channel value
+        //    }
+        //}
+        //// Set the alpha values for the terrain at the specified location
+        //terrain.terrainData.SetAlphamaps(0, 0, alphaMaps);
     }
 
     public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue)
