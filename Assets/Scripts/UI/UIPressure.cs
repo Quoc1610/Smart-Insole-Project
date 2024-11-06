@@ -13,13 +13,13 @@ public class UIPressure : MonoBehaviour
     private Tile[,] gridTiles;
 
     private int[,] resizedMatrix;
-
-    public Terrain terrain;
+    private Dictionary<Vector2Int, GameObject> cubeMap;
     public int heightScale = 100;
 
     [Tooltip("Set value at 2^x+1. Ex: 33, 65, 129, ...")]
     public int resolution = 65;
-
+    public GameObject go3DRightFoot;
+    public GameObject goCubeTile;
     int[,] ReadMatrixFromFile(string filePath)
     {
         string[] lines = File.ReadAllLines(filePath);
@@ -60,9 +60,11 @@ public class UIPressure : MonoBehaviour
         return heights;
     }
 
+
     private void Start()
     {
         OnSetUp();
+        Generate3DGrid(); // Initial grid generation
         string filePath = Application.dataPath + "/Scripts/Grid/left_foot_matrix-1.txt"; // Path to the text file
         int[,] matrix = ReadMatrixFromFile(filePath);
 
@@ -70,27 +72,11 @@ public class UIPressure : MonoBehaviour
         resizedMatrix = ResizeMatrix(matrix, width, height);
 
         float[,] heights = getHeatMap();
-
-        //float[,] heights = ReadDataFromFile(filePath);
-
         float maxHeight = FindMaxHeightValue(heights);
         NormalizeHeights(heights, maxHeight);
 
-        // Set the heights of the terrain based on the normalized matrix
-        terrain.terrainData.size = new Vector3(heights.GetLength(0), heightScale * maxHeight / 100, heights.GetLength(1)); // Set terrain size
-
-        terrain.terrainData.heightmapResolution = resolution;
-        Debug.Log(terrain.terrainData.heightmapResolution);
-
-        terrain.terrainData.SetHeights(0, 0, heights); // Set heights based on the normalized matrix values
-
-        // Assign the Terrain Layer to the Terrain
-
-        terrain.terrainData.terrainLayers = new TerrainLayer[] { new TerrainLayer(), new TerrainLayer(), new TerrainLayer() };
-        terrain.terrainData.RefreshPrototypes();
-
-        // Apply the Terrain Layer to the terrain based on height values
-        ApplyColorBasedOnHeight();
+        // Initialize the 3D grid for the first time
+        Generate3DGrid();
     }
 
 
@@ -99,6 +85,7 @@ public class UIPressure : MonoBehaviour
         Debug.Log("UIPressure OnSetUp");
         gridTiles = new Tile[width, height];
         GenerateGrid();
+        Generate3DGrid();
     }
 
     int[,] ResizeMatrix(int[,] originalMatrix, int newWidth, int newHeight)
@@ -153,14 +140,64 @@ public class UIPressure : MonoBehaviour
             }
         }
     }
+    private void Generate3DGrid()
+    {
+        cubeMap = new Dictionary<Vector2Int, GameObject>();
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                GameObject cube = Instantiate(goCubeTile);
+                cube.transform.SetParent(go3DRightFoot.transform, false);
+
+                cube.transform.localPosition = new Vector3(x, 0, y);
+
+                Tile tile = gridTiles[x, y];
+                //float heightScale = Mathf.Clamp(tile.realValue / 100f, 0.1f, 5f);
+                cube.transform.localScale = new Vector3(.1f, 1, 1);
+
+                Renderer renderer = cube.GetComponent<Renderer>();
+                renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
+
+                // Store the cube in the dictionary with its grid position as the key
+                cubeMap[new Vector2Int(x, y)] = cube;
+            }
+        }
+    }
+
+    // Method to update the 3D grid data dynamically
+    public void Update3DGrid()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Tile tile = gridTiles[x, y];
+                GameObject cube;
+
+                // Check if cube exists in the map
+                if (cubeMap.TryGetValue(new Vector2Int(x, y), out cube))
+                {
+                    // Update height based on realValue
+                    float heightScale = Mathf.Clamp(tile.realValue / 100f*10f, 0.1f, 100f);
+                    cube.transform.localScale = new Vector3(heightScale,1, 1);
+
+                    // Update color based on the new value
+                    Renderer renderer = cube.GetComponent<Renderer>();
+                    renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
+                }
+            }
+        }
+    }
     public void boundary()
     {
-        for(int x = 0; x < width; x++)
+        for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 Tile tmpTile = gridTiles[x, y];
-                tmpTile.realValue *= resizedMatrix[height-1-y, x];
+                tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
                 tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
                 tmpTile.UpdateValue(tmpTile.realValue);
             }
@@ -168,44 +205,6 @@ public class UIPressure : MonoBehaviour
         float[,] heights = getHeatMap();
         float maxHeight = FindMaxHeightValue(heights);
         NormalizeHeights(heights, maxHeight);
-
-        // Set the heights of the terrain based on the normalized matrix
-        terrain.terrainData.size = new Vector3(heights.GetLength(0), heightScale*maxHeight/100, heights.GetLength(1)); // Set terrain size
-        terrain.terrainData.SetHeights(0, 0, heights); // Set heights based on the normalized matrix values
-
-        ApplyColorBasedOnHeight();
-    }
-
-    // Change color of terrain here
-    private void ApplyColorBasedOnHeight()
-    {
-        int numLayers = terrain.terrainData.alphamapLayers;
-        Debug.Log(terrain.terrainData.alphamapWidth);
-        Debug.Log(terrain.terrainData.alphamapHeight);
-        //float[,,] alphaMaps = new float[terrain.terrainData.alphamapWidth, terrain.terrainData.alphamapHeight, terrain.terrainData.alphamapLayers];
-        //for (int y = 0; y < terrain.terrainData.alphamapHeight; y++)
-        //{
-        //    for (int x = 0; x < terrain.terrainData.alphamapWidth; x++)
-        //    {
-        //        float value = terrain.terrainData.GetHeight(y, x);
-        //        Tile tmpTile = gridTiles[0, 0];
-        //        Color color = tmpTile.GetColorBasedOnValue((int)((value / heightScale) * 100));
-
-        //        // Create a 3D float array with alpha values for each terrain layer
-
-
-        //        // Determine the mix of textures based on the color
-        //        Vector3 splat = new Vector3(color.r, color.g, color.b);
-        //        //splat.Normalize();
-
-        //        // Assign the normalized color values to the alphaMaps array
-        //        alphaMaps[0, 0, 0] = splat.x; // Red channel value
-        //        alphaMaps[0, 0, 1] = splat.y; // Green channel value
-        //        alphaMaps[0, 0, 2] = splat.z; // Blue channel value
-        //    }
-        //}
-        //// Set the alpha values for the terrain at the specified location
-        //terrain.terrainData.SetAlphamaps(0, 0, alphaMaps);
     }
 
     public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue)
@@ -241,6 +240,7 @@ public class UIPressure : MonoBehaviour
             }
         }
         boundary();
+        Update3DGrid();
     }
 
     public float[,] getHeatMap()
@@ -248,7 +248,7 @@ public class UIPressure : MonoBehaviour
 
         float[,] maps = new float[height, width];
 
-        
+
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -257,7 +257,7 @@ public class UIPressure : MonoBehaviour
                 maps[y, x] = (float)tmpTile.realValue;
             }
         }
-        
+
         return maps;
     }
 
@@ -275,7 +275,6 @@ public class UIPressure : MonoBehaviour
         return max;
     }
 
-    // Normalize the height values in the matrix to the range of 0 to 1
     private void NormalizeHeights(float[,] matrix, float maxHeight)
     {
         for (int x = 0; x < matrix.GetLength(0); x++)
