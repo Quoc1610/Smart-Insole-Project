@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 using UnityEngine;
 
 public class UIPressure : MonoBehaviour
@@ -135,6 +136,8 @@ public class UIPressure : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 Tile tileL = gridLeftTiles[x, y];
+                tileL.realValue = 0;
+                tileL.image.color=Color.white;
                 GameObject cubeL;
 
                 // Check if cube exists in the map
@@ -149,6 +152,8 @@ public class UIPressure : MonoBehaviour
                 }
 
                 Tile tileR = gridRightTiles[x, y];
+                tileR.realValue = 0;
+                tileR.image.color=Color.white;
                 GameObject cubeR;
 
                 // Check if cube exists in the map
@@ -244,6 +249,14 @@ public class UIPressure : MonoBehaviour
         {
             Tile tmpTile = gridRightTiles[x, y];
             tmpTile.realValue *= resizedMatrix[height - 1 - y, width - 1 - x];
+            if (resizedMatrix[height - 1 - y, width - 1 - x] == 0)
+            {
+                GameObject cubeR;
+                if (cubeMapR.TryGetValue(new Vector2Int(x, y), out cubeR))
+                {
+                    cubeR.gameObject.SetActive(false);
+                }
+            }
             tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
             tmpTile.UpdateValue(tmpTile.realValue);
         }
@@ -251,6 +264,15 @@ public class UIPressure : MonoBehaviour
         {
             Tile tmpTile = gridLeftTiles[x, y];
             tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
+            
+            if (resizedMatrix[height - 1 - y, x] == 0)
+            {
+                GameObject cubeL;
+                if (cubeMapL.TryGetValue(new Vector2Int(x, y), out cubeL))
+                {
+                    cubeL.gameObject.SetActive(false);
+                }
+            }
             tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
             tmpTile.UpdateValue(tmpTile.realValue);
         }

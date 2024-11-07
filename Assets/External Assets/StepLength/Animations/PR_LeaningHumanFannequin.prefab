@@ -2068,7 +2068,6 @@ GameObject:
   - component: {fileID: 7418477587794328390}
   - component: {fileID: 7418477587794328386}
   - component: {fileID: 7355868650302148683}
-  - component: {fileID: 1258059521677700478}
   - component: {fileID: 604693092786898713}
   m_Layer: 0
   m_Name: PR_LeaningHumanFannequin
@@ -2296,20 +2295,6 @@ MonoBehaviour:
       m_RotationOrder: 4
     AdjustForwAndSide: {x: 1, y: 0.75}
 --- !u!114 &7355868650302148683
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7652411668022408542}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d7f7739a2db1944b90565ee8de92b5e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  movementJoystick: {fileID: 0}
-  lsfBasic_RigidbodyMover: {fileID: 604693092786898713}
---- !u!114 &1258059521677700478
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
