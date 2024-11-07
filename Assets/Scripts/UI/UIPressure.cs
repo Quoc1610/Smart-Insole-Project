@@ -190,6 +190,24 @@ public class UIPressure : MonoBehaviour
             }
         }
     }
+
+    public void Update3DGridTile(int x, int y)
+    {
+        Tile tile = gridTiles[x, y];
+        GameObject cube;
+
+        // Check if cube exists in the map
+        if (cubeMap.TryGetValue(new Vector2Int(x, y), out cube))
+        {
+            // Update height based on realValue
+            float heightScale = Mathf.Clamp(tile.realValue / 100f * 10f, 0.1f, 100f);
+            cube.transform.localScale = new Vector3(heightScale, 1, 1);
+
+            // Update color based on the new value
+            Renderer renderer = cube.GetComponent<Renderer>();
+            renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
+        }
+    }
     public void boundary()
     {
         for (int x = 0; x < width; x++)
@@ -205,6 +223,26 @@ public class UIPressure : MonoBehaviour
         float[,] heights = getHeatMap();
         float maxHeight = FindMaxHeightValue(heights);
         NormalizeHeights(heights, maxHeight);
+    }
+
+    public void boundaryTile(int x, int y)
+    {
+        Tile tmpTile = gridTiles[x, y];
+        tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
+        tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
+        tmpTile.UpdateValue(tmpTile.realValue);
+    }
+
+    public void UpdateAll()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                boundaryTile(x, y);
+                Update3DGridTile(x, y);
+            }
+        }
     }
 
     public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue)
@@ -233,14 +271,13 @@ public class UIPressure : MonoBehaviour
                         }
 
                         neighborTile.realValue += value;
-                        neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+                        // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                         neighborTile.UpdateValue(neighborTile.realValue);
                     }
                 }
             }
         }
-        boundary();
-        Update3DGrid();
+        UpdateAll();
     }
 
     public float[,] getHeatMap()

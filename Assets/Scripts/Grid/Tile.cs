@@ -40,7 +40,7 @@ public class Tile : Button
         }
         txtValue.text = realValue.ToString();
         image.color = GetColorBasedOnValue(realValue);
-        parentScript.ActOnNeighbors(gridX, gridY, 50,value);
+        parentScript.ActOnNeighbors(gridX, gridY, 25,value);
     }
     public void UpdateValue(int value)
     {
