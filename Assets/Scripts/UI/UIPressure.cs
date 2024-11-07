@@ -9,17 +9,23 @@ public class UIPressure : MonoBehaviour
     [SerializeField] private int height;
     [SerializeField] private Tile tilePrefab;
     [SerializeField] private GameObject goLeftFoot;
+    [SerializeField] private GameObject goRightFoot;
 
-    private Tile[,] gridTiles;
+    private Tile[,] gridLeftTiles;
+    private Tile[,] gridRightTiles;
 
     private int[,] resizedMatrix;
-    private Dictionary<Vector2Int, GameObject> cubeMap;
+    private Dictionary<Vector2Int, GameObject> cubeMapL;
+    private Dictionary<Vector2Int, GameObject> cubeMapR;
     public int heightScale = 100;
 
     [Tooltip("Set value at 2^x+1. Ex: 33, 65, 129, ...")]
     public int resolution = 65;
+
     public GameObject go3DRightFoot;
+    public GameObject go3DLeftFoot;
     public GameObject goCubeTile;
+
     int[,] ReadMatrixFromFile(string filePath)
     {
         string[] lines = File.ReadAllLines(filePath);
@@ -40,52 +46,25 @@ public class UIPressure : MonoBehaviour
         return matrix;
     }
 
-    float[,] ReadDataFromFile(string filePath)
-    {
-        string[] lines = File.ReadAllLines(filePath);
-        int rowCount = lines.Length;
-        int colCount = lines[0].Split(' ').Length;
-
-        float[,] heights = new float[rowCount, colCount];
-
-        for (int i = 0; i < rowCount; i++)
-        {
-            string[] values = lines[i].Split(' ');
-            for (int j = 0; j < colCount; j++)
-            {
-                heights[i, j] = float.Parse(values[j]);
-            }
-        }
-
-        return heights;
-    }
-
-
     private void Start()
     {
         OnSetUp();
-        Generate3DGrid(); // Initial grid generation
         string filePath = Application.dataPath + "/Scripts/Grid/left_foot_matrix-1.txt"; // Path to the text file
         int[,] matrix = ReadMatrixFromFile(filePath);
 
         // Resize the original matrix to width x height
         resizedMatrix = ResizeMatrix(matrix, width, height);
-
-        float[,] heights = getHeatMap();
-        float maxHeight = FindMaxHeightValue(heights);
-        NormalizeHeights(heights, maxHeight);
-
-        // Initialize the 3D grid for the first time
-        Generate3DGrid();
     }
 
 
     public void OnSetUp()
     {
         Debug.Log("UIPressure OnSetUp");
-        gridTiles = new Tile[width, height];
+        gridLeftTiles = new Tile[width, height];
+        gridRightTiles = new Tile[width, height];
         GenerateGrid();
-        Generate3DGrid();
+        Generate3DLeftGrid();
+        Generate3DRightGrid();
     }
 
     int[,] ResizeMatrix(int[,] originalMatrix, int newWidth, int newHeight)
@@ -126,23 +105,52 @@ public class UIPressure : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                var spawnedTile = Instantiate(tilePrefab);
-                spawnedTile.transform.SetParent(goLeftFoot.transform, false);
-                spawnedTile.OnSetUp(x, y, this);
+                var spawnedLTile = Instantiate(tilePrefab);
+                spawnedLTile.transform.SetParent(goLeftFoot.transform, false);
+                spawnedLTile.OnSetUp(x, y, this);
 
-                RectTransform rectTransform = spawnedTile.GetComponent<RectTransform>();
-                rectTransform.localScale = Vector3.one;
-                rectTransform.anchoredPosition = new Vector2(spawnedTile.width * x, spawnedTile.height * y);
+                RectTransform rectLTransform = spawnedLTile.GetComponent<RectTransform>();
+                rectLTransform.localScale = Vector3.one;
+                rectLTransform.anchoredPosition = new Vector2(spawnedLTile.width * x, spawnedLTile.height * y);
+                spawnedLTile.name = $"TileLeft {x} {y}";
+                var spawnedRTile = Instantiate(tilePrefab);
+                spawnedRTile.transform.SetParent(goRightFoot.transform, false);
+                spawnedRTile.OnSetUp(x, y, this);
 
-                spawnedTile.name = $"Tile {x} {y}";
+                RectTransform rectRTransform = spawnedLTile.GetComponent<RectTransform>();
+                rectRTransform.localScale = Vector3.one;
+                rectRTransform.anchoredPosition = new Vector2(spawnedLTile.width * x, spawnedLTile.height * y);
+                spawnedRTile.name = $"TileRight {x} {y}";
 
-                gridTiles[x, y] = spawnedTile;
+                gridLeftTiles[x, y] = spawnedLTile;
+                gridRightTiles[x, y] = spawnedRTile;
             }
         }
     }
-    private void Generate3DGrid()
+
+    private void Generate3DLeftGrid()
     {
-        cubeMap = new Dictionary<Vector2Int, GameObject>();
+        cubeMapL = new Dictionary<Vector2Int, GameObject>();
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                GameObject cube = Instantiate(goCubeTile);
+                cube.transform.SetParent(go3DLeftFoot.transform, false);
+                cube.transform.localPosition = new Vector3(x, 0, y);
+                Tile tile = gridLeftTiles[x, y];
+                cube.transform.localScale = new Vector3(.1f, 1, 1);
+                Renderer renderer = cube.GetComponent<Renderer>();
+                renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
+                cubeMapL[new Vector2Int(x, y)] = cube;
+            }
+        }
+    }
+
+    private void Generate3DRightGrid()
+    {
+        cubeMapR = new Dictionary<Vector2Int, GameObject>();
 
         for (int x = 0; x < width; x++)
         {
@@ -150,84 +158,52 @@ public class UIPressure : MonoBehaviour
             {
                 GameObject cube = Instantiate(goCubeTile);
                 cube.transform.SetParent(go3DRightFoot.transform, false);
-
                 cube.transform.localPosition = new Vector3(x, 0, y);
-
-                Tile tile = gridTiles[x, y];
-                //float heightScale = Mathf.Clamp(tile.realValue / 100f, 0.1f, 5f);
+                Tile tile = gridRightTiles[x, y];
                 cube.transform.localScale = new Vector3(.1f, 1, 1);
-
                 Renderer renderer = cube.GetComponent<Renderer>();
                 renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
-
-                // Store the cube in the dictionary with its grid position as the key
-                cubeMap[new Vector2Int(x, y)] = cube;
-            }
-        }
-    }
-
-    // Method to update the 3D grid data dynamically
-    public void Update3DGrid()
-    {
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                Tile tile = gridTiles[x, y];
-                GameObject cube;
-
-                // Check if cube exists in the map
-                if (cubeMap.TryGetValue(new Vector2Int(x, y), out cube))
-                {
-                    // Update height based on realValue
-                    float heightScale = Mathf.Clamp(tile.realValue / 100f*10f, 0.1f, 100f);
-                    cube.transform.localScale = new Vector3(heightScale,1, 1);
-
-                    // Update color based on the new value
-                    Renderer renderer = cube.GetComponent<Renderer>();
-                    renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
-                }
+                cubeMapR[new Vector2Int(x, y)] = cube;
             }
         }
     }
 
     public void Update3DGridTile(int x, int y)
     {
-        Tile tile = gridTiles[x, y];
-        GameObject cube;
+        Tile tileL = gridLeftTiles[x, y];
+        GameObject cubeL;
 
         // Check if cube exists in the map
-        if (cubeMap.TryGetValue(new Vector2Int(x, y), out cube))
+        if (cubeMapL.TryGetValue(new Vector2Int(x, y), out cubeL))
         {
             // Update height based on realValue
-            float heightScale = Mathf.Clamp(tile.realValue / 100f * 10f, 0.1f, 100f);
-            cube.transform.localScale = new Vector3(heightScale, 1, 1);
+            float heightScale = Mathf.Clamp(tileL.realValue / 100f * 10f, 0.1f, 100f);
+            cubeL.transform.localScale = new Vector3(heightScale, 1, 1);
 
             // Update color based on the new value
-            Renderer renderer = cube.GetComponent<Renderer>();
-            renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
+            Renderer renderer = cubeL.GetComponent<Renderer>();
+            renderer.material.color = tileL.GetColorBasedOnValue(tileL.realValue);
         }
-    }
-    public void boundary()
-    {
-        for (int x = 0; x < width; x++)
+
+        Tile tileR = gridRightTiles[x, y];
+        GameObject cubeR;
+
+        // Check if cube exists in the map
+        if (cubeMapR.TryGetValue(new Vector2Int(x, y), out cubeR))
         {
-            for (int y = 0; y < height; y++)
-            {
-                Tile tmpTile = gridTiles[x, y];
-                tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
-                tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
-                tmpTile.UpdateValue(tmpTile.realValue);
-            }
+            // Update height based on realValue
+            float heightScale = Mathf.Clamp(tileR.realValue / 100f * 10f, 0.1f, 100f);
+            cubeR.transform.localScale = new Vector3(heightScale, 1, 1);
+
+            // Update color based on the new value
+            Renderer renderer = cubeR.GetComponent<Renderer>();
+            renderer.material.color = tileR.GetColorBasedOnValue(tileR.realValue);
         }
-        float[,] heights = getHeatMap();
-        float maxHeight = FindMaxHeightValue(heights);
-        NormalizeHeights(heights, maxHeight);
     }
 
     public void boundaryTile(int x, int y)
     {
-        Tile tmpTile = gridTiles[x, y];
+        Tile tmpTile = gridLeftTiles[x, y];
         tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
         tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
         tmpTile.UpdateValue(tmpTile.realValue);
@@ -240,7 +216,7 @@ public class UIPressure : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 boundaryTile(x, y);
-                Update3DGridTile(x, y);
+                Update3DGridTile(x,y);
             }
         }
     }
@@ -251,7 +227,6 @@ public class UIPressure : MonoBehaviour
         {
             for (int y = -radius; y <= radius; y++)
             {
-                // use Manhattan distance to calculate the distance between the center and the current tile for an example
                 int manhattanDistance = Mathf.Abs(x) + Mathf.Abs(y);
                 if (manhattanDistance == 0)
                 {
@@ -263,7 +238,7 @@ public class UIPressure : MonoBehaviour
                     int neighborY = centerY + y;
                     if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height)
                     {
-                        Tile neighborTile = gridTiles[neighborX, neighborY];
+                        Tile neighborTile = gridLeftTiles[neighborX, neighborY];
                         int value = baseValue - (manhattanDistance * 1);
                         if (value < 0)
                         {
@@ -277,25 +252,8 @@ public class UIPressure : MonoBehaviour
                 }
             }
         }
+
         UpdateAll();
-    }
-
-    public float[,] getHeatMap()
-    {
-
-        float[,] maps = new float[height, width];
-
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                Tile tmpTile = gridTiles[x, y];
-                maps[y, x] = (float)tmpTile.realValue;
-            }
-        }
-
-        return maps;
     }
 
     // Find the maximum height value in the matrix
@@ -309,6 +267,7 @@ public class UIPressure : MonoBehaviour
                 max = height;
             }
         }
+
         return max;
     }
 
