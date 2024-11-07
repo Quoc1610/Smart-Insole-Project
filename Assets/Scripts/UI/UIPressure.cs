@@ -107,7 +107,7 @@ public class UIPressure : MonoBehaviour
             {
                 var spawnedLTile = Instantiate(tilePrefab);
                 spawnedLTile.transform.SetParent(goLeftFoot.transform, false);
-                spawnedLTile.OnSetUp(x, y, this);
+                spawnedLTile.OnSetUp(x, y, this,0);
 
                 RectTransform rectLTransform = spawnedLTile.GetComponent<RectTransform>();
                 rectLTransform.localScale = Vector3.one;
@@ -115,11 +115,11 @@ public class UIPressure : MonoBehaviour
                 spawnedLTile.name = $"TileLeft {x} {y}";
                 var spawnedRTile = Instantiate(tilePrefab);
                 spawnedRTile.transform.SetParent(goRightFoot.transform, false);
-                spawnedRTile.OnSetUp(x, y, this);
+                spawnedRTile.OnSetUp(x, y, this,1);
 
-                RectTransform rectRTransform = spawnedLTile.GetComponent<RectTransform>();
+                RectTransform rectRTransform = spawnedRTile.GetComponent<RectTransform>();
                 rectRTransform.localScale = Vector3.one;
-                rectRTransform.anchoredPosition = new Vector2(spawnedLTile.width * x, spawnedLTile.height * y);
+                rectRTransform.anchoredPosition = new Vector2(spawnedRTile.width * x, spawnedRTile.height * y);
                 spawnedRTile.name = $"TileRight {x} {y}";
 
                 gridLeftTiles[x, y] = spawnedLTile;
@@ -201,27 +201,38 @@ public class UIPressure : MonoBehaviour
         }
     }
 
-    public void boundaryTile(int x, int y)
+    public void boundaryTile(int x, int y, int side)
     {
-        Tile tmpTile = gridLeftTiles[x, y];
-        tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
-        tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
-        tmpTile.UpdateValue(tmpTile.realValue);
+        if (side == 1)
+        {
+            Tile tmpTile = gridRightTiles[x, y];
+            tmpTile.realValue *= resizedMatrix[height - 1 - y, width - 1 - x];
+            tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
+            tmpTile.UpdateValue(tmpTile.realValue);
+        }
+        else
+        {
+            Tile tmpTile = gridLeftTiles[x, y];
+            tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
+            tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
+            tmpTile.UpdateValue(tmpTile.realValue);
+        }
+        
     }
 
-    public void UpdateAll()
+    public void UpdateAll(int side)
     {
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                boundaryTile(x, y);
+                boundaryTile(x, y, side);
                 Update3DGridTile(x,y);
             }
         }
     }
 
-    public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue)
+    public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue,int side)
     {
         for (int x = -radius; x <= radius; x++)
         {
@@ -238,47 +249,37 @@ public class UIPressure : MonoBehaviour
                     int neighborY = centerY + y;
                     if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height)
                     {
-                        Tile neighborTile = gridLeftTiles[neighborX, neighborY];
-                        int value = baseValue - (manhattanDistance * 1);
-                        if (value < 0)
-                        {
-                            value = 0;
-                        }
+                        if (side == 0) {
+                            Tile neighborTile = gridLeftTiles[neighborX, neighborY];
+                            int value = baseValue - (manhattanDistance * 1);
+                            if (value < 0)
+                            {
+                                value = 0;
+                            }
 
-                        neighborTile.realValue += value;
-                        // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
-                        neighborTile.UpdateValue(neighborTile.realValue);
+                            neighborTile.realValue += value;
+                            // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+                            neighborTile.UpdateValue(neighborTile.realValue);
+                        }
+                        else { 
+                            Tile neighborTile = gridRightTiles[neighborX, neighborY];
+                            int value = baseValue - (manhattanDistance * 1);
+                            if (value < 0)
+                            {
+                                value = 0;
+                            }
+
+                            neighborTile.realValue += value;
+                            // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+                            neighborTile.UpdateValue(neighborTile.realValue);
+                        }
+                       
+                      
                     }
                 }
             }
         }
 
-        UpdateAll();
-    }
-
-    // Find the maximum height value in the matrix
-    private float FindMaxHeightValue(float[,] matrix)
-    {
-        float max = float.MinValue;
-        foreach (float height in matrix)
-        {
-            if (height > max)
-            {
-                max = height;
-            }
-        }
-
-        return max;
-    }
-
-    private void NormalizeHeights(float[,] matrix, float maxHeight)
-    {
-        for (int x = 0; x < matrix.GetLength(0); x++)
-        {
-            for (int z = 0; z < matrix.GetLength(1); z++)
-            {
-                matrix[x, z] /= maxHeight;
-            }
-        }
+        UpdateAll(side);
     }
 }

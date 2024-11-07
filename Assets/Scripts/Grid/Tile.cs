@@ -10,10 +10,11 @@ public class Tile : Button
     public int gridX; 
     public int gridY; 
     public int realValue;
+    public int side;
     private TextMeshProUGUI txtValue ;
     private UIPressure parentScript;
 
-    public void OnSetUp(int x, int y, UIPressure parent)
+    public void OnSetUp(int x, int y, UIPressure parent,int side)
     {
         image = GetComponent<Image>();
         realValue = 0;
@@ -24,10 +25,11 @@ public class Tile : Button
         gridX = x;
         gridY = y;
         parentScript = parent;
-        onClick.AddListener(() => OnClicked(20));
+        onClick.AddListener(() => OnClicked(20, side));
+        this.side = side;
     }
 
-    public void OnClicked(int value)
+    public void OnClicked(int value,int side)
     {
         if(realValue == 100)
         {
@@ -40,7 +42,7 @@ public class Tile : Button
         }
         txtValue.text = realValue.ToString();
         image.color = GetColorBasedOnValue(realValue);
-        parentScript.ActOnNeighbors(gridX, gridY, 25,value);
+        parentScript.ActOnNeighbors(gridX, gridY, 25,value,side);
     }
     public void UpdateValue(int value)
     {
