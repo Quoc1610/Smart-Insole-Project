@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ConstrainedExecution;
 using UnityEngine;
+using TMPro;
 
 public class UIPressure : MonoBehaviour
 {
@@ -26,10 +27,11 @@ public class UIPressure : MonoBehaviour
     public GameObject go3DRightFoot;
     public GameObject go3DLeftFoot;
     public GameObject goCubeTile;
-
-    int[,] ReadMatrixFromFile(string filePath)
+    public TextMeshProUGUI textDebug;
+    public TextAsset textFile;
+     int[,] ReadMatrixFromText(string textContent)
     {
-        string[] lines = File.ReadAllLines(filePath);
+        string[] lines = textContent.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
         int rowCount = lines.Length;
         int colCount = lines[0].Split(' ').Length;
 
@@ -46,12 +48,13 @@ public class UIPressure : MonoBehaviour
 
         return matrix;
     }
-
-    private void Start()
+    private void Awake() 
+        
     {
         OnSetUp();
-        string filePath = Application.dataPath + "/Scripts/Grid/left_foot_matrix-1.txt"; // Path to the text file
-        int[,] matrix = ReadMatrixFromFile(filePath);
+      
+        int[,] matrix = ReadMatrixFromText(textFile.text);
+        Debug.Log("Matrix: " + matrix);
 
         // Resize the original matrix to width x height
         resizedMatrix = ResizeMatrix(matrix, width, height);

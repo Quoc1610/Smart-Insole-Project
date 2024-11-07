@@ -374,6 +374,7 @@ namespace FIMSpace.RagdollAnimatorDemo
         }
         public void OnPressure(int side)
         {
+            //UIManager._instance.uiPressure.textDebug.text="";
             UIManager._instance.uiPressure.ResetHeightGrid();
             if (side == 0)
             {
@@ -393,6 +394,7 @@ namespace FIMSpace.RagdollAnimatorDemo
         }
         public void OnPressureWalkZero(int side)
         {
+            //UIManager._instance.uiPressure.textDebug.text="";
             UIManager._instance.uiPressure.ResetHeightGrid();
             if (side == 0)
             {
