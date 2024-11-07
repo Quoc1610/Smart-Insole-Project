@@ -29,7 +29,7 @@ public class UIPressure : MonoBehaviour
     public GameObject goCubeTile;
     public TextMeshProUGUI textDebug;
     public TextAsset textFile;
-     int[,] ReadMatrixFromText(string textContent)
+    int[,] ReadMatrixFromText(string textContent)
     {
         string[] lines = textContent.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
         int rowCount = lines.Length;
@@ -48,11 +48,11 @@ public class UIPressure : MonoBehaviour
 
         return matrix;
     }
-    private void Awake() 
-        
+    private void Awake()
+
     {
         OnSetUp();
-      
+
         int[,] matrix = ReadMatrixFromText(textFile.text);
         Debug.Log("Matrix: " + matrix);
 
@@ -111,7 +111,7 @@ public class UIPressure : MonoBehaviour
             {
                 var spawnedLTile = Instantiate(tilePrefab);
                 spawnedLTile.transform.SetParent(goLeftFoot.transform, false);
-                spawnedLTile.OnSetUp(x, y, this,0);
+                spawnedLTile.OnSetUp(x, y, this, 0);
 
                 RectTransform rectLTransform = spawnedLTile.GetComponent<RectTransform>();
                 rectLTransform.localScale = Vector3.one;
@@ -119,7 +119,7 @@ public class UIPressure : MonoBehaviour
                 spawnedLTile.name = $"TileLeft {x} {y}";
                 var spawnedRTile = Instantiate(tilePrefab);
                 spawnedRTile.transform.SetParent(goRightFoot.transform, false);
-                spawnedRTile.OnSetUp(x, y, this,1);
+                spawnedRTile.OnSetUp(x, y, this, 1);
 
                 RectTransform rectRTransform = spawnedRTile.GetComponent<RectTransform>();
                 rectRTransform.localScale = Vector3.one;
@@ -140,33 +140,33 @@ public class UIPressure : MonoBehaviour
             {
                 Tile tileL = gridLeftTiles[x, y];
                 tileL.realValue = 0;
-                tileL.image.color=Color.white;
+                tileL.image.color = Color.white;
                 GameObject cubeL;
 
                 // Check if cube exists in the map
                 if (cubeMapL.TryGetValue(new Vector2Int(x, y), out cubeL))
                 {
-                 
+
                     cubeL.transform.localScale = new Vector3(1, 1, 1);
 
                     // Update color based on the new value
                     Renderer renderer = cubeL.GetComponent<Renderer>();
-                    renderer.material.color =Color.white;
+                    renderer.material.color = Color.white;
                 }
 
                 Tile tileR = gridRightTiles[x, y];
                 tileR.realValue = 0;
-                tileR.image.color=Color.white;
+                tileR.image.color = Color.white;
                 GameObject cubeR;
 
                 // Check if cube exists in the map
                 if (cubeMapR.TryGetValue(new Vector2Int(x, y), out cubeR))
                 {
                     // Update height based on realValue
-                   
+
                     cubeR.transform.localScale = new Vector3(1, 1, 1);
 
-                  
+
                     Renderer renderer = cubeR.GetComponent<Renderer>();
                     renderer.material.color = Color.white;
                 }
@@ -175,6 +175,13 @@ public class UIPressure : MonoBehaviour
     }
     private void Generate3DLeftGrid()
     {
+        if (cubeMapL != null)
+        {
+            foreach (var cube in cubeMapL.Values)
+            {
+                Destroy(cube);
+            }
+        }
         cubeMapL = new Dictionary<Vector2Int, GameObject>();
 
         for (int x = 0; x < width; x++)
@@ -195,6 +202,13 @@ public class UIPressure : MonoBehaviour
 
     private void Generate3DRightGrid()
     {
+        if (cubeMapR != null)
+        {
+            foreach (var cube in cubeMapR.Values)
+            {
+                Destroy(cube);
+            }
+        }
         cubeMapR = new Dictionary<Vector2Int, GameObject>();
 
         for (int x = 0; x < width; x++)
@@ -267,7 +281,7 @@ public class UIPressure : MonoBehaviour
         {
             Tile tmpTile = gridLeftTiles[x, y];
             tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
-            
+
             if (resizedMatrix[height - 1 - y, x] == 0)
             {
                 GameObject cubeL;
@@ -279,7 +293,7 @@ public class UIPressure : MonoBehaviour
             tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
             tmpTile.UpdateValue(tmpTile.realValue);
         }
-        
+
     }
 
     public void UpdateAll(int side)
@@ -289,12 +303,12 @@ public class UIPressure : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 boundaryTile(x, y, side);
-                Update3DGridTile(x,y);
+                Update3DGridTile(x, y);
             }
         }
     }
 
-    public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue,int side)
+    public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue, int side)
     {
         for (int x = -radius; x <= radius; x++)
         {
@@ -311,7 +325,8 @@ public class UIPressure : MonoBehaviour
                     int neighborY = centerY + y;
                     if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height)
                     {
-                        if (side == 0) {
+                        if (side == 0)
+                        {
                             Tile neighborTile = gridLeftTiles[neighborX, neighborY];
                             int value = baseValue - (manhattanDistance * 1);
                             if (value < 0)
@@ -323,7 +338,8 @@ public class UIPressure : MonoBehaviour
                             // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                             neighborTile.UpdateValue(neighborTile.realValue);
                         }
-                        else { 
+                        else
+                        {
                             Tile neighborTile = gridRightTiles[neighborX, neighborY];
                             int value = baseValue - (manhattanDistance * 1);
                             if (value < 0)
@@ -335,8 +351,8 @@ public class UIPressure : MonoBehaviour
                             // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                             neighborTile.UpdateValue(neighborTile.realValue);
                         }
-                       
-                      
+
+
                     }
                 }
             }
