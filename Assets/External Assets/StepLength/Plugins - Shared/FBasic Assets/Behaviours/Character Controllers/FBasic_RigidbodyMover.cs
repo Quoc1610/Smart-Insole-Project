@@ -101,7 +101,7 @@ namespace FIMSpace.RagdollAnimatorDemo
 
             wasInitialized = true;
         }
-
+        
         private void OnEnable()
         {
             if (!wasInitialized) return;
@@ -372,5 +372,40 @@ namespace FIMSpace.RagdollAnimatorDemo
         {
             this.speedAnim = speedAnim < 0 ? 0 : speedAnim;
         }
+        public void OnPressure(int side)
+        {
+            UIManager._instance.uiPressure.ResetHeightGrid();
+            if (side == 0)
+            {
+                UIManager._instance.uiPressure.gridLeftTiles[1,2].OnClicked(80,0);
+                
+            }
+            else
+            {
+                UIManager._instance.uiPressure.gridLeftTiles[1,2].OnClicked(80,0);
+            }
+            
+        }
+        public void OnPressureWalkZero(int side)
+        {
+            UIManager._instance.uiPressure.ResetHeightGrid();
+            if (side == 0)
+            {
+                //right 60
+                UIManager._instance.uiPressure.gridLeftTiles[1,2].OnClicked(80,0);
+                
+                //left 80
+                
+            }
+            else
+            {
+                //right 80
+                UIManager._instance.uiPressure.gridLeftTiles[1,2].OnClicked(80,0);
+                
+                //left 60
+            }
+            
+        }
     }
+   
 }

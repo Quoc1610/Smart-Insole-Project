@@ -11,8 +11,8 @@ public class UIPressure : MonoBehaviour
     [SerializeField] private GameObject goLeftFoot;
     [SerializeField] private GameObject goRightFoot;
 
-    private Tile[,] gridLeftTiles;
-    private Tile[,] gridRightTiles;
+    public Tile[,] gridLeftTiles;
+    public Tile[,] gridRightTiles;
 
     private int[,] resizedMatrix;
     private Dictionary<Vector2Int, GameObject> cubeMapL;
@@ -128,6 +128,43 @@ public class UIPressure : MonoBehaviour
         }
     }
 
+    public void ResetHeightGrid()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Tile tileL = gridLeftTiles[x, y];
+                GameObject cubeL;
+
+                // Check if cube exists in the map
+                if (cubeMapL.TryGetValue(new Vector2Int(x, y), out cubeL))
+                {
+                 
+                    cubeL.transform.localScale = new Vector3(1, 1, 1);
+
+                    // Update color based on the new value
+                    Renderer renderer = cubeL.GetComponent<Renderer>();
+                    renderer.material.color =Color.white;
+                }
+
+                Tile tileR = gridRightTiles[x, y];
+                GameObject cubeR;
+
+                // Check if cube exists in the map
+                if (cubeMapR.TryGetValue(new Vector2Int(x, y), out cubeR))
+                {
+                    // Update height based on realValue
+                   
+                    cubeR.transform.localScale = new Vector3(1, 1, 1);
+
+                  
+                    Renderer renderer = cubeR.GetComponent<Renderer>();
+                    renderer.material.color = Color.white;
+                }
+            }
+        }
+    }
     private void Generate3DLeftGrid()
     {
         cubeMapL = new Dictionary<Vector2Int, GameObject>();
