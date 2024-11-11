@@ -26,6 +26,8 @@ public class UIMainMenu : MonoBehaviour
         UIManager._instance.uiInApp.lsGOChar[0].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionY;
         UIManager._instance.uiInApp.OnSetUpScale();
         UIManager._instance.goJoystick.SetActive(true);
+        UIManager._instance.uiController.mode = 1;
+        UIManager._instance.uiController.gameObject.SetActive(true);
         this.gameObject.SetActive(false);
         UIManager._instance.uiInApp.gameObject.SetActive(true);
 
@@ -39,6 +41,8 @@ public class UIMainMenu : MonoBehaviour
         UIManager._instance.uiInApp.lsGOChar[1].GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionY;
         UIManager._instance.uiInApp.OnSetUpScale();
         UIManager._instance.goJoystick.SetActive(true);
+        UIManager._instance.uiController.mode = 0;
+        UIManager._instance.uiController.gameObject.SetActive(true);
         this.gameObject.SetActive(false);
         UIManager._instance.uiInApp.gameObject.SetActive(true);
 

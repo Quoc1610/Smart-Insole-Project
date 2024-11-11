@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace FIMSpace.RagdollAnimatorDemo
 {
@@ -7,11 +8,13 @@ namespace FIMSpace.RagdollAnimatorDemo
     [DefaultExecutionOrder(100)]
     public class FBasic_RigidbodyMover : FimpossibleComponent
     {
+        public bool ModeJoystick = true;
         public float stepLength = 0;
         public float speedAnim = 1f;
         private float timer = 0f;
         public Rigidbody Rigb;
-        public Joystick movementJoystick;
+        public Joystick movementJoystick = null;
+        public UIController uiController = null;
 
         [Space(4)]
         public float MovementSpeed = 2f;
@@ -116,6 +119,8 @@ namespace FIMSpace.RagdollAnimatorDemo
         // Movement Calculation Params
 
         [NonSerialized] public Vector2 moveDirectionLocal = Vector3.zero;
+
+        public float moveDirectionLocalZ = 0;
         public Vector2 moveDirectionLocalNonZero { get; private set; }
 
         public Vector3 moveDirectionWorld { get; private set; }
@@ -152,20 +157,30 @@ namespace FIMSpace.RagdollAnimatorDemo
                 }
 
                 moveDirectionLocal = Vector2.zero;
+                moveDirectionLocalZ = 0f;
 
                 // Add code
-                if (movementJoystick)
+                if (ModeJoystick)
                 {
                     moveDirectionLocal.x = movementJoystick.Direction.x;
                     moveDirectionLocal.y = movementJoystick.Direction.y;
                 }
                 else
                 {
-                    if (Input.GetKey(KeyCode.A)) moveDirectionLocal += Vector2.left;
-                    else if (Input.GetKey(KeyCode.D)) moveDirectionLocal += Vector2.right;
+                    //if (Input.GetKey(KeyCode.A)) moveDirectionLocal += Vector2.left;
+                    //else if (Input.GetKey(KeyCode.D)) moveDirectionLocal += Vector2.right;
 
-                    if (Input.GetKey(KeyCode.W)) moveDirectionLocal += Vector2.up;
-                    else if (Input.GetKey(KeyCode.S)) moveDirectionLocal += Vector2.down;
+                    //if (Input.GetKey(KeyCode.W)) moveDirectionLocal += Vector2.up;
+                    //else if (Input.GetKey(KeyCode.S)) moveDirectionLocal += Vector2.down;
+
+                    if (uiController.GetButtonValue(1)) moveDirectionLocal += Vector2.left;
+                    else if (uiController.GetButtonValue(3)) moveDirectionLocal += Vector2.right;
+
+                    if (uiController.GetButtonValue(0)) moveDirectionLocal += Vector2.up;
+                    else if (uiController.GetButtonValue(2)) moveDirectionLocal += Vector2.down;
+
+                    if (uiController.GetButtonValue(4)) moveDirectionLocalZ += 1;
+                    else if (uiController.GetButtonValue(5)) moveDirectionLocalZ += -1;
                 }
 
                 //if (Input.GetKey(KeyCode.A)) moveDirectionLocal += Vector2.left;
@@ -179,7 +194,7 @@ namespace FIMSpace.RagdollAnimatorDemo
                 if (moveDirectionLocal != Vector2.zero)
                 {
                     moveDirectionLocal.Normalize();
-                    moveDirectionWorld = flatCamRot * new Vector3(moveDirectionLocal.x, 0f, moveDirectionLocal.y);
+                    moveDirectionWorld = flatCamRot * new Vector3(moveDirectionLocal.x, moveDirectionLocalZ, moveDirectionLocal.y);
                     moveDirectionLocalNonZero = moveDirectionLocal;
                 }
                 else
@@ -192,7 +207,9 @@ namespace FIMSpace.RagdollAnimatorDemo
                     moveDirectionWorld = new Vector3(Mathf.Abs(stepLength), 0f, 0f);
                     standDown = true;
                 }
-                if (moveDirectionWorld != Vector3.zero) targetInstantRotation = Quaternion.LookRotation(moveDirectionWorld);
+                Vector3 rotationMovement = moveDirectionWorld;
+                rotationMovement.y = 0f;
+                if (rotationMovement.x !=0 || rotationMovement.z != 0) targetInstantRotation = Quaternion.LookRotation(rotationMovement);
             }
             else if (updateMovement == false) moveDirectionWorld = Vector3.zero;
 
@@ -245,7 +262,11 @@ namespace FIMSpace.RagdollAnimatorDemo
             // Add code
             if (!standDown)
             {
-                transform.localPosition += currentWorldAccel * 0.0005f;
+                transform.localPosition += currentWorldAccel * 0.001f;
+                transform.rotation = targetInstantRotation;
+            }
+            else
+            {
                 transform.rotation = targetInstantRotation;
             }
 

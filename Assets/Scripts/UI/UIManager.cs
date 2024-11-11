@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
     public UIInApp uiInApp;
     public UIPressure uiPressure;
     public GameObject goJoystick;
+    public UIController uiController;
     public static UIManager _instance { get; private set; }
     private void Awake() {
          if (_instance == null)
@@ -22,6 +23,7 @@ public class UIManager : MonoBehaviour
         
         uiInApp.OnSetUp();
         goJoystick.SetActive(false);
+        uiController.gameObject.SetActive(false);
         
     }
     private void Start() {

@@ -44,7 +44,7 @@ public class Tile : Button
         image.color = GetColorBasedOnValue(realValue);
         parentScript.ActOnNeighbors(gridX, gridY, 10,value,side);
         UIManager._instance.uiPressure.textDebug.text+="X: "+gridX+" Y: "+gridY;
-        Debug.Log("X: "+gridX+" Y: "+gridY);
+        //Debug.Log("X: "+gridX+" Y: "+gridY);
     }
     public void UpdateValue(int value)
     {
