@@ -5,6 +5,7 @@ using System.Runtime.ConstrainedExecution;
 using UnityEngine;
 using TMPro;
 using System.Linq;
+using System.Drawing;
 
 public class UIPressure : MonoBehaviour
 {
@@ -28,8 +29,11 @@ public class UIPressure : MonoBehaviour
     public GameObject go3DRightFoot;
     public GameObject go3DLeftFoot;
     public GameObject goCubeTile;
+    public GameObject goCubeTileR;
     public TextMeshProUGUI textDebug;
     public TextAsset textFile;
+
+    public Material instancedMaterial;
     int[,] ReadMatrixFromText(string textContent)
     {
         string[] lines = textContent.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -52,6 +56,21 @@ public class UIPressure : MonoBehaviour
     private void Awake()
 
     {
+        if (instancedMaterial == null)
+        {
+            instancedMaterial = new Material(goCubeTile.GetComponent<Renderer>().sharedMaterial);
+            instancedMaterial.enableInstancing = true;
+        }
+        Shader shader = Shader.Find("myShader");
+        if (shader != null)
+        {
+            instancedMaterial.shader = shader;
+            Debug.Log("Locate Shader");
+        }
+        else
+        {
+            Debug.Log("Shader not found!");
+        }
         OnSetUp();
 
         int[,] matrix = ReadMatrixFromText(textFile.text);
@@ -139,176 +158,119 @@ public class UIPressure : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                Tile tileL = gridLeftTiles[x, y];
-                tileL.realValue = 0;
-                tileL.image.color = Color.white;
-                GameObject cubeL;
+                gridLeftTiles[x, y].realValue = 0;
+                gridLeftTiles[x, y].GetColorBasedOnValue(0);
 
-                // Check if cube exists in the map
-                if (cubeMapL.TryGetValue(new Vector2Int(x, y), out cubeL))
-                {
-
-                    cubeL.transform.localScale = new Vector3(1, 1, 1);
-
-                    // Update color based on the new value
-                    Renderer renderer = cubeL.GetComponent<Renderer>();
-                    renderer.material.color = Color.white;
-                }
-
-                Tile tileR = gridRightTiles[x, y];
-                tileR.realValue = 0;
-                tileR.image.color = Color.white;
-                GameObject cubeR;
-
-                // Check if cube exists in the map
-                if (cubeMapR.TryGetValue(new Vector2Int(x, y), out cubeR))
-                {
-                    // Update height based on realValue
-
-                    cubeR.transform.localScale = new Vector3(1, 1, 1);
-
-
-                    Renderer renderer = cubeR.GetComponent<Renderer>();
-                    renderer.material.color = Color.white;
-                }
+                gridRightTiles[x, y].realValue = 0;
+                gridRightTiles[x, y].GetColorBasedOnValue(0);
             }
         }
     }
+
+    // With GPU Instancing
     private void Generate3DLeftGrid()
     {
-        if (cubeMapL != null)
-        {
-            foreach (var cube in cubeMapL.Values)
-            {
-                Destroy(cube);
-            }
-        }
-        cubeMapL = new Dictionary<Vector2Int, GameObject>();
+        Matrix4x4[] matrices = new Matrix4x4[width * height];
+        Vector4[] colors = new Vector4[width * height];
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                GameObject cube = Instantiate(goCubeTile);
-                cube.transform.SetParent(go3DLeftFoot.transform, false);
-                cube.transform.localPosition = new Vector3(x, 0, y);
-                Tile tile = gridLeftTiles[x, y];
-                cube.transform.localScale = new Vector3(.1f, 1, 1);
-                Renderer renderer = cube.GetComponent<Renderer>();
-                renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
-                cubeMapL[new Vector2Int(x, y)] = cube;
+                int index = x * height + y;
+                Vector3 localPosition = new Vector3(x, 0, y);
+                Vector3 position = go3DLeftFoot.transform.position + go3DLeftFoot.transform.TransformVector(localPosition);
+
+                Quaternion rotation = Quaternion.identity;
+                Vector3 scale = new Vector3(1, 1, 1);
+                matrices[index] = Matrix4x4.TRS(position, rotation, scale);
+                colors[index] = gridLeftTiles[x, y].GetColorBasedOnValue(gridLeftTiles[x, y].realValue);
             }
         }
+
+        MaterialPropertyBlock props = new MaterialPropertyBlock();
+        props.SetVectorArray("_Color", colors);
+
+        Graphics.DrawMeshInstanced(goCubeTile.GetComponent<MeshFilter>().sharedMesh, 0, instancedMaterial, matrices, width * height, props);
     }
 
+    // With GPU Instancing
     private void Generate3DRightGrid()
     {
-        if (cubeMapR != null)
-        {
-            foreach (var cube in cubeMapR.Values)
-            {
-                Destroy(cube);
-            }
-        }
-        cubeMapR = new Dictionary<Vector2Int, GameObject>();
+        Matrix4x4[] matrices = new Matrix4x4[width * height];
+        Vector4[] colors = new Vector4[width * height];
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                GameObject cube = Instantiate(goCubeTile);
-                cube.transform.SetParent(go3DRightFoot.transform, false);
-                cube.transform.localPosition = new Vector3(x, 0, y);
-                Tile tile = gridRightTiles[x, y];
-                cube.transform.localScale = new Vector3(.1f, 1, 1);
-                Renderer renderer = cube.GetComponent<Renderer>();
-                renderer.material.color = tile.GetColorBasedOnValue(tile.realValue);
-                cubeMapR[new Vector2Int(x, y)] = cube;
+                int index = x * height + y;
+                Vector3 localPosition = new Vector3(x, 0, y);
+                Vector3 position = go3DRightFoot.transform.position + go3DRightFoot.transform.TransformVector(localPosition);
+
+                Quaternion rotation = Quaternion.identity;
+                Vector3 scale = new Vector3(1, 1, 1);
+                matrices[index] = Matrix4x4.TRS(position, rotation, scale);
+                colors[index] = gridRightTiles[x, y].GetColorBasedOnValue(gridRightTiles[x, y].realValue);
             }
         }
+
+        MaterialPropertyBlock props = new MaterialPropertyBlock();
+        props.SetVectorArray("_Color", colors);
+
+        Graphics.DrawMeshInstanced(goCubeTile.GetComponent<MeshFilter>().sharedMesh, 0, instancedMaterial, matrices, width * height, props);
     }
 
-
-    public void Update3DGridTile(int x, int y)
+    public void Update3DGrid()
     {
-        Tile tileL = gridLeftTiles[x, y];
-        GameObject cubeL;
+        Matrix4x4[] matricesL = new Matrix4x4[width * height];
+        Vector4[] colorsL = new Vector4[width * height];
 
-        // Check if cube exists in the map
-        if (cubeMapL.TryGetValue(new Vector2Int(x, y), out cubeL))
-        {
-            // Update height based on realValue
-            float heightScale = Mathf.Clamp(tileL.realValue / 100f * 10f, 0.1f, 100f);
-            cubeL.transform.localScale = new Vector3(heightScale, 1, 1);
+        Matrix4x4[] matricesR = new Matrix4x4[width * height];
+        Vector4[] colorsR = new Vector4[width * height];
 
-            // Update color based on the new value
-            Renderer renderer = cubeL.GetComponent<Renderer>();
-            renderer.material.color = tileL.GetColorBasedOnValue(tileL.realValue);
-        }
-
-        Tile tileR = gridRightTiles[x, y];
-        GameObject cubeR;
-
-        // Check if cube exists in the map
-        if (cubeMapR.TryGetValue(new Vector2Int(x, y), out cubeR))
-        {
-            // Update height based on realValue
-            float heightScale = Mathf.Clamp(tileR.realValue / 100f * 10f, 0.1f, 100f);
-            cubeR.transform.localScale = new Vector3(heightScale, 1, 1);
-
-            // Update color based on the new value
-            Renderer renderer = cubeR.GetComponent<Renderer>();
-            renderer.material.color = tileR.GetColorBasedOnValue(tileR.realValue);
-        }
-    }
-
-    public void boundaryTile(int x, int y, int side)
-    {
-        if (side == 1)
-        {
-            Tile tmpTile = gridRightTiles[x, y];
-            tmpTile.realValue *= resizedMatrix[height - 1 - y, width - 1 - x];
-            if (resizedMatrix[height - 1 - y, width - 1 - x] == 0)
-            {
-                GameObject cubeR;
-                if (cubeMapR.TryGetValue(new Vector2Int(x, y), out cubeR))
-                {
-                    cubeR.gameObject.SetActive(false);
-                }
-            }
-            tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
-            tmpTile.UpdateValue(tmpTile.realValue);
-        }
-        else
-        {
-            Tile tmpTile = gridLeftTiles[x, y];
-            tmpTile.realValue *= resizedMatrix[height - 1 - y, x];
-
-            if (resizedMatrix[height - 1 - y, x] == 0)
-            {
-                GameObject cubeL;
-                if (cubeMapL.TryGetValue(new Vector2Int(x, y), out cubeL))
-                {
-                    cubeL.gameObject.SetActive(false);
-                }
-            }
-            tmpTile.image.color = tmpTile.GetColorBasedOnValue(tmpTile.realValue);
-            tmpTile.UpdateValue(tmpTile.realValue);
-        }
-
-    }
-
-    public void UpdateAll(int side)
-    {
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                boundaryTile(x, y, side);
-                Update3DGridTile(x, y);
+                int index = x * height + y;
+
+                Tile tileL = gridLeftTiles[x, y];
+                float heightScaleL = Mathf.Clamp(tileL.realValue / 100f * 10f, 0.1f, 100f);
+
+
+                Vector3 localPositionL = new Vector3(x, 0, y);
+                Vector3 positionL = go3DLeftFoot.transform.position + go3DLeftFoot.transform.TransformVector(localPositionL);
+
+                Quaternion rotationL = go3DLeftFoot.transform.rotation;
+                Vector3 scaleL = new Vector3(1, heightScaleL, 1);
+                matricesL[index] = Matrix4x4.TRS(positionL, rotationL, scaleL);
+                colorsL[index] = gridLeftTiles[x, y].GetColorBasedOnValue(gridLeftTiles[x, y].realValue);
+
+                Tile tileR = gridRightTiles[x, y];
+                float heightScaleR = Mathf.Clamp(tileL.realValue / 100f * 10f, 0.1f, 100f);
+
+                Vector3 localPositionR = new Vector3(x, 0, y);
+                Vector3 positionR = go3DRightFoot.transform.position + go3DRightFoot.transform.TransformVector(localPositionR);
+
+                Quaternion rotationR = go3DRightFoot.transform.rotation;
+                Vector3 scaleR = new Vector3(1, heightScaleR, 1);
+                matricesR[index] = Matrix4x4.TRS(positionR, rotationR, scaleR);
+                colorsR[index] = gridRightTiles[x, y].GetColorBasedOnValue(gridRightTiles[x, y].realValue);
             }
         }
+
+        MaterialPropertyBlock propsL = new MaterialPropertyBlock();
+        propsL.SetVectorArray("_Color", colorsL);
+
+        Graphics.DrawMeshInstanced(goCubeTile.GetComponent<MeshFilter>().sharedMesh, 0, instancedMaterial, matricesL, width * height, propsL);
+
+        MaterialPropertyBlock propsR = new MaterialPropertyBlock();
+        propsR.SetVectorArray("_Color", colorsR);
+
+        Graphics.DrawMeshInstanced(goCubeTile.GetComponent<MeshFilter>().sharedMesh, 0, instancedMaterial, matricesR, width * height, propsR);
     }
+
 
     public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue, int side)
     {
@@ -339,6 +301,9 @@ public class UIPressure : MonoBehaviour
                             neighborTile.realValue += value;
                             // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                             neighborTile.UpdateValue(neighborTile.realValue);
+                            neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, neighborX]; 
+                            neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+                            neighborTile.UpdateValue(neighborTile.realValue);
                         }
                         else
                         {
@@ -352,14 +317,19 @@ public class UIPressure : MonoBehaviour
                             neighborTile.realValue += value;
                             // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                             neighborTile.UpdateValue(neighborTile.realValue);
+                            neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, width - 1 - neighborX];
+                            neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+                            neighborTile.UpdateValue(neighborTile.realValue);
+
                         }
-
-
                     }
                 }
             }
         }
+    }
 
-        UpdateAll(side);
+    private void Update()
+    {
+        Update3DGrid();
     }
 }
