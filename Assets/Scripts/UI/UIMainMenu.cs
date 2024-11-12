@@ -17,6 +17,7 @@ public class UIMainMenu : MonoBehaviour
     {
         goImgTarget.SetActive(false);
         goPlain.SetActive(false);
+        UIManager._instance.goJoystick.SetActive(false);
     }
     public void OnBtnImgTarget_Clicked()
     {

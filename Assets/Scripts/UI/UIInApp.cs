@@ -6,6 +6,7 @@ using TMPro;
 using UnityEditor;
 using FIMSpace;
 using FIMSpace.RagdollAnimatorDemo;
+using JetBrains.Annotations;
 
 public class UIInApp : MonoBehaviour
 {
@@ -15,12 +16,15 @@ public class UIInApp : MonoBehaviour
     public Slider sliderSpeed;
     public Slider sliderMoveSpeed;
     public Slider sliderStepLength;
-    public Slider sliderScale;
+    public List<Button> btnScale=new List<Button>();
+    public List<GameObject> lsgoBorder=new List<GameObject>();
+    public List<GameObject> lsgoTab=new List<GameObject>();
     public TextMeshProUGUI txtSpeed;
     public TextMeshProUGUI txtMoveSpeed;    
     public List<GameObject> lsGOChar=new List<GameObject>();
     public Vector3 v3CharScale;
     public TextMeshProUGUI txtStepLength;
+    public TextMeshProUGUI txtScale;
     public List<FBasic_RigidbodyMover> lsfBasic_RigidbodyMover=new List<FBasic_RigidbodyMover>();
 
     public int indexgoChar;
@@ -32,14 +36,14 @@ public class UIInApp : MonoBehaviour
         sliderSpeed.minValue=1;
         sliderStepLength.maxValue=1;
         sliderStepLength.minValue=0;
-        sliderScale.maxValue=1;
-        sliderScale.minValue=0;
         sliderMoveSpeed.maxValue=5;
         sliderMoveSpeed.minValue=2;
+        lsgoBorder[0].SetActive(true);
+        lsgoBorder[1].SetActive(false);
+        lsgoTab[0].SetActive(true);
+        lsgoTab[1].SetActive(false);
     }
-    public void OnSetUpScale(){
-        v3CharScale=lsGOChar[indexgoChar].transform.localScale;
-    }
+
     public void OnSliderSpeedChange()
     {
         //todo
@@ -58,19 +62,32 @@ public class UIInApp : MonoBehaviour
         txtMoveSpeed.text="Move Speed: "+sliderMoveSpeed.value.ToString("F2");
         lsfBasic_RigidbodyMover[indexgoChar].MovementSpeed=sliderMoveSpeed.value;
     }
-    public void OnSliderScaleChange()
-    {
-        
-        lsGOChar[indexgoChar].transform.localScale=v3CharScale;
-        Debug.Log("v3CharScale: "+v3CharScale);
-        Debug.Log("lsGOChar[indexgoChar].transform.localScale: "+lsGOChar[indexgoChar].transform.localScale);
-        lsGOChar[indexgoChar].transform.localScale= lsGOChar[indexgoChar].transform.localScale*(1+sliderScale.value);
+    public void OnSetUpScale(){
+        v3CharScale=lsGOChar[indexgoChar].transform.localScale;
     }
-
+    public void OnbtnScaleClick(int index)
+    {
+       
+        if(index==0){
+            if(lsGOChar[indexgoChar].transform.localScale.x/v3CharScale.x==1f){
+                return;
+            }
+            lsGOChar[indexgoChar].transform.localScale-=v3CharScale;
+        }
+        else{
+            lsGOChar[indexgoChar].transform.localScale+=v3CharScale;
+        }
+        UpdateScaleText();
+    }
+    public void UpdateScaleText(){
+        txtScale.text=(lsGOChar[indexgoChar].transform.localScale.x/v3CharScale.x).ToString("F2");
+    }
     public void OnBtnHomeClick()
     {
         // TODO
         // Go back to main menu
+        UIManager._instance.uiMainMenu.gameObject.SetActive(true);
+        this.gameObject.SetActive(false);
     }
     public void OnBtnPopUpClick(int index){
         if(index==0){
@@ -82,6 +99,20 @@ public class UIInApp : MonoBehaviour
             btnPopUp[0].gameObject.SetActive(true);
             btnPopUp[1].gameObject.SetActive(false);
             goPopUp.SetActive(false);
+        }
+    }
+    public void OnBtnTabClick(int index){
+        if(index==0){
+            lsgoBorder[0].SetActive(true);
+            lsgoBorder[1].SetActive(false);
+            lsgoTab[0].SetActive(true);
+            lsgoTab[1].SetActive(false);
+        }
+        else{
+            lsgoBorder[0].SetActive(false);
+            lsgoBorder[1].SetActive(true);
+            lsgoTab[0].SetActive(false);
+            lsgoTab[1].SetActive(true);
         }
     }
 }

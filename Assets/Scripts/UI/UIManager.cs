@@ -23,7 +23,7 @@ public class UIManager : MonoBehaviour
         
         uiInApp.OnSetUp();
         goJoystick.SetActive(false);
-        uiController.gameObject.SetActive(false);
+        //uiController.gameObject.SetActive(false);
         
     }
     private void Start() {
