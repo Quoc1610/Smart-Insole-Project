@@ -34,6 +34,8 @@ public class UIPressure : MonoBehaviour
     public TextAsset textFile;
 
     public Material instancedMaterial;
+
+    private int sideFeet = -1;
     int[,] ReadMatrixFromText(string textContent)
     {
         string[] lines = textContent.Split(new[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -56,21 +58,22 @@ public class UIPressure : MonoBehaviour
     private void Awake()
 
     {
-        if (instancedMaterial == null)
-        {
-            instancedMaterial = new Material(goCubeTile.GetComponent<Renderer>().sharedMaterial);
-            instancedMaterial.enableInstancing = true;
-        }
+        //if (instancedMaterial == null)
+        //{
+        //    instancedMaterial = new Material(goCubeTile.GetComponent<Renderer>().sharedMaterial);
+        //    instancedMaterial.enableInstancing = true;
+        //}
         Shader shader = Shader.Find("myShader");
-        if (shader != null)
-        {
-            instancedMaterial.shader = shader;
-            Debug.Log("Locate Shader");
-        }
-        else
-        {
-            Debug.Log("Shader not found!");
-        }
+        instancedMaterial.shader = shader;
+        //if (shader != null)
+        //{
+        //    instancedMaterial.shader = shader;
+        //    Debug.Log("Locate Shader");
+        //}
+        //else
+        //{
+        //    Debug.Log("Shader not found!");
+        //}
         OnSetUp();
 
         int[,] matrix = ReadMatrixFromText(textFile.text);
@@ -87,8 +90,6 @@ public class UIPressure : MonoBehaviour
         gridLeftTiles = new Tile[width, height];
         gridRightTiles = new Tile[width, height];
         GenerateGrid();
-        Generate3DLeftGrid();
-        Generate3DRightGrid();
     }
 
     int[,] ResizeMatrix(int[,] originalMatrix, int newWidth, int newHeight)
@@ -165,63 +166,11 @@ public class UIPressure : MonoBehaviour
                 gridRightTiles[x, y].GetColorBasedOnValue(0);
             }
         }
+        //Update3DGrid();
+
     }
 
-    // With GPU Instancing
-    private void Generate3DLeftGrid()
-    {
-        Matrix4x4[] matrices = new Matrix4x4[width * height];
-        Vector4[] colors = new Vector4[width * height];
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                int index = x * height + y;
-                Vector3 localPosition = new Vector3(x, 0, y);
-                Vector3 position = go3DLeftFoot.transform.position + go3DLeftFoot.transform.TransformVector(localPosition);
-
-                Quaternion rotation = Quaternion.identity;
-                Vector3 scale = new Vector3(1, 1, 1);
-                matrices[index] = Matrix4x4.TRS(position, rotation, scale);
-                colors[index] = gridLeftTiles[x, y].GetColorBasedOnValue(gridLeftTiles[x, y].realValue);
-            }
-        }
-
-        MaterialPropertyBlock props = new MaterialPropertyBlock();
-        props.SetVectorArray("_Color", colors);
-
-        Graphics.DrawMeshInstanced(goCubeTile.GetComponent<MeshFilter>().sharedMesh, 0, instancedMaterial, matrices, width * height, props);
-    }
-
-    // With GPU Instancing
-    private void Generate3DRightGrid()
-    {
-        Matrix4x4[] matrices = new Matrix4x4[width * height];
-        Vector4[] colors = new Vector4[width * height];
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                int index = x * height + y;
-                Vector3 localPosition = new Vector3(x, 0, y);
-                Vector3 position = go3DRightFoot.transform.position + go3DRightFoot.transform.TransformVector(localPosition);
-
-                Quaternion rotation = Quaternion.identity;
-                Vector3 scale = new Vector3(1, 1, 1);
-                matrices[index] = Matrix4x4.TRS(position, rotation, scale);
-                colors[index] = gridRightTiles[x, y].GetColorBasedOnValue(gridRightTiles[x, y].realValue);
-            }
-        }
-
-        MaterialPropertyBlock props = new MaterialPropertyBlock();
-        props.SetVectorArray("_Color", colors);
-
-        Graphics.DrawMeshInstanced(goCubeTile.GetComponent<MeshFilter>().sharedMesh, 0, instancedMaterial, matrices, width * height, props);
-    }
-
-    public void Update3DGrid()
+    public void Update3DGrid(int side)
     {
         Matrix4x4[] matricesL = new Matrix4x4[width * height];
         Vector4[] colorsL = new Vector4[width * height];
@@ -236,6 +185,10 @@ public class UIPressure : MonoBehaviour
                 int index = x * height + y;
 
                 Tile tileL = gridLeftTiles[x, y];
+                if (tileL.realValue == 0 && resizedMatrix[height - 1 - y, x] == 1)
+                {
+                    tileL.realValue = 40;
+                }
                 float heightScaleL = Mathf.Clamp(tileL.realValue / 100f * 10f, 0.1f, 100f);
 
 
@@ -245,10 +198,15 @@ public class UIPressure : MonoBehaviour
                 Quaternion rotationL = go3DLeftFoot.transform.rotation;
                 Vector3 scaleL = new Vector3(1, heightScaleL, 1);
                 matricesL[index] = Matrix4x4.TRS(positionL, rotationL, scaleL);
+                
                 colorsL[index] = gridLeftTiles[x, y].GetColorBasedOnValue(gridLeftTiles[x, y].realValue);
 
                 Tile tileR = gridRightTiles[x, y];
-                float heightScaleR = Mathf.Clamp(tileL.realValue / 100f * 10f, 0.1f, 100f);
+                if (tileR.realValue == 0 && resizedMatrix[height - 1 - y, width - 1 - x] == 1)
+                {
+                    tileR.realValue = 40;
+                }
+                float heightScaleR = Mathf.Clamp(tileR.realValue / 100f * 10f, 0.1f, 100f);
 
                 Vector3 localPositionR = new Vector3(x, 0, y);
                 Vector3 positionR = go3DRightFoot.transform.position + go3DRightFoot.transform.TransformVector(localPositionR);
@@ -274,6 +232,7 @@ public class UIPressure : MonoBehaviour
 
     public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue, int side)
     {
+        sideFeet = side;
         for (int x = -radius; x <= radius; x++)
         {
             for (int y = -radius; y <= radius; y++)
@@ -330,6 +289,6 @@ public class UIPressure : MonoBehaviour
 
     private void Update()
     {
-        Update3DGrid();
+        Update3DGrid(sideFeet);
     }
 }
