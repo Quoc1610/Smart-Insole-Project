@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class Tile : Button
+public class Tile
 {
     public float width;
     public float height;
@@ -11,21 +11,14 @@ public class Tile : Button
     public int gridY; 
     public int realValue;
     public int side;
-    private TextMeshProUGUI txtValue ;
     private UIPressure parentScript;
 
     public void OnSetUp(int x, int y, UIPressure parent,int side)
     {
-        image = GetComponent<Image>();
         realValue = 0;
-        txtValue = GetComponentInChildren<TextMeshProUGUI>();
-        width = this.gameObject.GetComponent<RectTransform>().rect.width;
-        height = this.gameObject.GetComponent<RectTransform>().rect.height;
-        txtValue.text = "0";
         gridX = x;
         gridY = y;
         parentScript = parent;
-        onClick.AddListener(() => OnClicked(20, side));
         this.side = side;
     }
 
@@ -40,11 +33,9 @@ public class Tile : Button
         {
             realValue = 100;
         }
-        txtValue.text = realValue.ToString();
-        image.color = GetColorBasedOnValue(realValue);
+
         parentScript.ActOnNeighbors(gridX, gridY, 10,value,side);
-        UIManager._instance.uiPressure.textDebug.text+="X: "+gridX+" Y: "+gridY;
-        //Debug.Log("X: "+gridX+" Y: "+gridY);
+       // UIManager._instance.uiPressure.textDebug.text+="X: "+gridX+" Y: "+gridY;
     }
     public void UpdateValue(int value)
     {
@@ -53,8 +44,6 @@ public class Tile : Button
             value = 100;
         }
         realValue = value;
-        txtValue.text = realValue.ToString();
-        image.color = GetColorBasedOnValue(realValue);
     }
     public Color GetColorBasedOnValue(int Invalue)
     {

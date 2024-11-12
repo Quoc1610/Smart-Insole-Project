@@ -19,11 +19,7 @@ public class UIPressure : MonoBehaviour
     public Tile[,] gridRightTiles;
 
     private int[,] resizedMatrix;
-    private Dictionary<Vector2Int, GameObject> cubeMapL;
-    private Dictionary<Vector2Int, GameObject> cubeMapR;
     public int heightScale = 100;
-
-    [Tooltip("Set value at 2^x+1. Ex: 33, 65, 129, ...")]
     public int resolution = 65;
 
     public GameObject go3DRightFoot;
@@ -58,28 +54,14 @@ public class UIPressure : MonoBehaviour
     private void Awake()
 
     {
-        //if (instancedMaterial == null)
-        //{
-        //    instancedMaterial = new Material(goCubeTile.GetComponent<Renderer>().sharedMaterial);
-        //    instancedMaterial.enableInstancing = true;
-        //}
         Shader shader = Shader.Find("myShader");
         instancedMaterial.shader = shader;
-        //if (shader != null)
-        //{
-        //    instancedMaterial.shader = shader;
-        //    Debug.Log("Locate Shader");
-        //}
-        //else
-        //{
-        //    Debug.Log("Shader not found!");
-        //}
+
         OnSetUp();
 
         int[,] matrix = ReadMatrixFromText(textFile.text);
         Debug.Log("Matrix: " + matrix);
 
-        // Resize the original matrix to width x height
         resizedMatrix = ResizeMatrix(matrix, width, height);
     }
 
@@ -130,23 +112,11 @@ public class UIPressure : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                var spawnedLTile = Instantiate(tilePrefab);
-                spawnedLTile.transform.SetParent(goLeftFoot.transform, false);
+                var spawnedLTile = new Tile();
+                
                 spawnedLTile.OnSetUp(x, y, this, 0);
-
-                RectTransform rectLTransform = spawnedLTile.GetComponent<RectTransform>();
-                rectLTransform.localScale = Vector3.one;
-                rectLTransform.anchoredPosition = new Vector2(spawnedLTile.width * x, spawnedLTile.height * y);
-                spawnedLTile.name = $"TileLeft {x} {y}";
-                var spawnedRTile = Instantiate(tilePrefab);
-                spawnedRTile.transform.SetParent(goRightFoot.transform, false);
+                var spawnedRTile =new Tile();
                 spawnedRTile.OnSetUp(x, y, this, 1);
-
-                RectTransform rectRTransform = spawnedRTile.GetComponent<RectTransform>();
-                rectRTransform.localScale = Vector3.one;
-                rectRTransform.anchoredPosition = new Vector2(spawnedRTile.width * x, spawnedRTile.height * y);
-                spawnedRTile.name = $"TileRight {x} {y}";
-
                 gridLeftTiles[x, y] = spawnedLTile;
                 gridRightTiles[x, y] = spawnedRTile;
             }
@@ -166,8 +136,6 @@ public class UIPressure : MonoBehaviour
                 gridRightTiles[x, y].GetColorBasedOnValue(0);
             }
         }
-        //Update3DGrid();
-
     }
 
     public void Update3DGrid(int side)
@@ -258,10 +226,9 @@ public class UIPressure : MonoBehaviour
                             }
 
                             neighborTile.realValue += value;
-                            // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                             neighborTile.UpdateValue(neighborTile.realValue);
                             neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, neighborX]; 
-                            neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+                            //neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                             neighborTile.UpdateValue(neighborTile.realValue);
                         }
                         else
@@ -274,10 +241,9 @@ public class UIPressure : MonoBehaviour
                             }
 
                             neighborTile.realValue += value;
-                            // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                             neighborTile.UpdateValue(neighborTile.realValue);
                             neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, width - 1 - neighborX];
-                            neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+                           // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
                             neighborTile.UpdateValue(neighborTile.realValue);
 
                         }
