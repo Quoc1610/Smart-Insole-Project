@@ -100,6 +100,13 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
+    "com.unity.mobile.android-logcat": {
+      "version": "1.4.2",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.nuget.newtonsoft-json": {
       "version": "3.2.1",
       "depth": 1,
@@ -286,6 +293,17 @@
         "com.unity.xr.legacyinputhelpers": "2.1.7"
       },
       "url": "https://packages.unity.com"
+    },
+    "com.velorexe.androidbluetoothlowenergy": {
+      "version": "https://github.com/Velorexe/Unity-Android-Bluetooth-Low-Energy.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.mobile.android-logcat": "1.2.3",
+        "com.unity.ugui": "1.0.0",
+        "com.unity.modules.androidjni": "^1.0.0"
+      },
+      "hash": "bdd1bf68c14c4c3c86ffb542683d720c4c6d10a8"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",

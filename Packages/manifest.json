@@ -13,6 +13,7 @@
     "com.unity.xr.arcore": "5.1.5",
     "com.unity.xr.arfoundation": "5.1.5",
     "com.unity.xr.interaction.toolkit": "2.5.4",
+    "com.velorexe.androidbluetoothlowenergy": "https://github.com/Velorexe/Unity-Android-Bluetooth-Low-Energy.git",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
