@@ -4,6 +4,8 @@ using UnityEngine.UI;
 using System.Text;
 using TMPro;
 using System;
+using Newtonsoft.Json;
+using System.Linq;
 
 public class bleMain : MonoBehaviour
 {
@@ -14,6 +16,15 @@ public class bleMain : MonoBehaviour
     private string ServiceUUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     private string Characteristic = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
+    public class PressureData
+    {
+        public string Start_byte;
+        public string Protocol_ID;
+        public int Data_len;
+        public string[][] Pressure_mapping;
+        public string Check_sum;
+        public string Stop_byte;
+    }
 
     enum States
     {
@@ -162,12 +173,17 @@ public class bleMain : MonoBehaviour
                             byte startByte = bytes[0];
                             byte protocolID = bytes[1];
                             byte dataLen = bytes[2];
-                            byte[] pressureMapping = new byte[6];
-                            Array.Copy(bytes, 3, pressureMapping, 0, 6);
-                            byte checkSum = bytes[9];
-                            byte stopByte = bytes[10];
+                            byte[][] pressureMapping = new byte[7][];
+                            for (int i = 0; i < 7; i++)
+                            {
+                                pressureMapping[i] = new byte[4];
+                                Array.Copy(bytes, 3 + (i * 4), pressureMapping[i], 0, 4);
+                            }
+                            byte checkSum = bytes[32];
+                            byte stopByte = bytes[33];
 
                             // Check if protocolID is not equal to 0x32
+                            //box.text += "\n" + protocolID.ToString("X2");
                             if (protocolID != 0x32)
                             {
                                 //setFieldText("Protocol ID does not match the condition.");
@@ -176,23 +192,40 @@ public class bleMain : MonoBehaviour
                             }
                             else
                             {
-                                setFieldText("Received");
+                                //box.text += "\nProtocol ID match the condition.";
                             }
+
+                            // Convert pressureMapping to an array of string arrays
+                            string[][] pressureMappingDec = new string[pressureMapping.Length][];
+                            for (int i = 0; i < pressureMapping.Length; i++)
+                            {
+                                pressureMappingDec[i] = new string[pressureMapping[i].Length];
+                                for (int j = 0; j < pressureMapping[i].Length; j++)
+                                {
+                                    pressureMappingDec[i][j] = pressureMapping[i][j].ToString();
+                                }
+                            }
+
                             // Creating a JSON object with the extracted fields
-                            var dataJson = new
+                            var dataJson = new PressureData
                             {
                                 Start_byte = startByte.ToString("X2"),
                                 Protocol_ID = protocolID.ToString("X2"),
                                 Data_len = dataLen,
-                                Pressure_mapping = BitConverter.ToString(pressureMapping).Replace("-", " "),
+                                Pressure_mapping = pressureMappingDec, // Convert each inner array to a string and make it an array
                                 Check_sum = checkSum.ToString("X2"),
                                 Stop_byte = stopByte.ToString("X2")
                             };
 
-                            string jsonData = JsonUtility.ToJson(dataJson);
+                            string jsonData = JsonConvert.SerializeObject(dataJson);
+                            string hexString = BitConverter.ToString(bytes).Replace("-", ""); // Convert bytes to hex string
+                                                                                              // Displaying the Pressure_mapping property in the PressureData object
+                            string pressureMappingString = string.Join(",\n", dataJson.Pressure_mapping.Select(arr => string.Join(" ", arr)));
 
-                            setFieldText("Received JSON Data: " + jsonData);
-                            box.text += "\nReceived JSON Data: " + jsonData;
+                            //setFieldText("Received JSON Data: " + jsonData + "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString);
+                            //box.text += "\nReceived JSON Data: " + jsonData + "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString;
+                            setFieldText(pressureMappingString);
+                            box.text += "\n"+ pressureMappingString;
                         });
 
                         // set to the none state and the user can start sending and receiving data
