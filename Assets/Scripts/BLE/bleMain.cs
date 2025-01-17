@@ -35,6 +35,7 @@ public class bleMain : MonoBehaviour
     private string _deviceAddress;
 
     [SerializeField] private TextMeshProUGUI field;
+    [SerializeField] private TextMeshProUGUI box;
 
     void Reset()
     {
@@ -157,8 +158,41 @@ public class bleMain : MonoBehaviour
 
                         BluetoothLEHardwareInterface.SubscribeCharacteristicWithDeviceAddress(_deviceAddress, ServiceUUID, Characteristic, null, (address, characteristicUUID, bytes) => {
                             //string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-                            string converted = BitConverter.ToString(bytes).Replace("-", ""); // Convert bytes to hex string
-                            setFieldText("byte length: " + bytes.Length + ", Data: " + converted);
+                            // Extracting individual fields from the byte array
+                            byte startByte = bytes[0];
+                            byte protocolID = bytes[1];
+                            byte dataLen = bytes[2];
+                            byte[] pressureMapping = new byte[6];
+                            Array.Copy(bytes, 3, pressureMapping, 0, 6);
+                            byte checkSum = bytes[9];
+                            byte stopByte = bytes[10];
+
+                            // Check if protocolID is not equal to 0x32
+                            if (protocolID != 0x32)
+                            {
+                                //setFieldText("Protocol ID does not match the condition.");
+                                //box.text += "\nProtocol ID does not match the condition.";
+                                return;
+                            }
+                            else
+                            {
+                                setFieldText("Received");
+                            }
+                            // Creating a JSON object with the extracted fields
+                            var dataJson = new
+                            {
+                                Start_byte = startByte.ToString("X2"),
+                                Protocol_ID = protocolID.ToString("X2"),
+                                Data_len = dataLen,
+                                Pressure_mapping = BitConverter.ToString(pressureMapping).Replace("-", " "),
+                                Check_sum = checkSum.ToString("X2"),
+                                Stop_byte = stopByte.ToString("X2")
+                            };
+
+                            string jsonData = JsonUtility.ToJson(dataJson);
+
+                            setFieldText("Received JSON Data: " + jsonData);
+                            box.text += "\nReceived JSON Data: " + jsonData;
                         });
 
                         // set to the none state and the user can start sending and receiving data
