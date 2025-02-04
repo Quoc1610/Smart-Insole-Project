@@ -6,6 +6,7 @@ using TMPro;
 using System;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 public class bleMain : MonoBehaviour
 {
@@ -38,6 +39,9 @@ public class bleMain : MonoBehaviour
         Communication,
     }
 
+    private string[] CHARGER_STATE = { "No Charger", "Charging", "Charge Termination" };
+    private string[] INSOLE_STATE = { "STOPPING", "WALKING", "RUNNING" };
+
     private bool _workingFoundDevice = true;
     private bool _connected = false;
     private float _timeout = 0f;
@@ -48,6 +52,12 @@ public class bleMain : MonoBehaviour
     [SerializeField] private TextMeshProUGUI field;
     [SerializeField] private TextMeshProUGUI box;
 
+    [SerializeField] private TextMeshProUGUI batteryField;
+    [SerializeField] private TextMeshProUGUI chargerField;
+    [SerializeField] private TextMeshProUGUI IMUField;
+    [SerializeField] private TextMeshProUGUI temperatureField;
+    [SerializeField] private TextMeshProUGUI stateAndSpeedField;
+    [SerializeField] private TextMeshProUGUI footClearanceField;
     void Reset()
     {
         _workingFoundDevice = false;    // used to guard against trying to connect to a second device while still connecting to the first
@@ -168,64 +178,133 @@ public class bleMain : MonoBehaviour
                         setFieldText("Subscribing to ESP32");
 
                         BluetoothLEHardwareInterface.SubscribeCharacteristicWithDeviceAddress(_deviceAddress, ServiceUUID, Characteristic, null, (address, characteristicUUID, bytes) => {
-                            //string converted = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
+                            string hexString = BitConverter.ToString(bytes).Replace("-", ""); // Convert bytes to hex string
+                            setFieldText("byte length: " + bytes.Length + ", Data: 0x" + hexString);
+                            box.text += "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString;
+
                             // Extracting individual fields from the byte array
                             byte startByte = bytes[0];
                             byte protocolID = bytes[1];
                             byte dataLen = bytes[2];
-                            byte[][] pressureMapping = new byte[7][];
-                            for (int i = 0; i < 7; i++)
+                            byte[] checkSum = new byte[2];
+                            Array.Copy(bytes, bytes.Length - 3, checkSum, 0, 2);
+                            byte stopByte = bytes[bytes.Length - 1];
+                            switch (protocolID)
                             {
-                                pressureMapping[i] = new byte[4];
-                                Array.Copy(bytes, 3 + (i * 4), pressureMapping[i], 0, 4);
+                                // Battery
+                                case 0x30:
+                                    byte[] battery = new byte[2];
+                                    Array.Copy(bytes, 3, battery, 0, 2);
+                                    Array.Reverse(battery);
+                                    int batteryValue = BitConverter.ToUInt16(battery, 0);
+                                    batteryField.text = "Battery: " + batteryValue.ToString("D3") + "%";
+                                    break;
+                                // Charger
+                                case 0x31:
+                                    byte charger = bytes[3];
+                                    int chargerValue = charger;
+                                    chargerField.text = "Charger State: " + CHARGER_STATE[chargerValue];
+                                    break;
+                                // IMU
+                                case 0x32:
+                                    byte[][] gyro = new byte[3][];
+                                    float[] gyroValue = new float[3];
+                                    for (int i = 0; i < 3; i++)
+                                    {
+                                        gyro[i] = new byte[4];
+                                        Array.Copy(bytes, 3 + (i * 4), gyro[i], 0, 4);
+                                        Array.Reverse(gyro[i]);
+                                        gyroValue[i] = (float)BitConverter.ToSingle(gyro[i], 0);
+                                    }
+                                    byte[][] accel = new byte[3][];
+                                    float[] accelValue = new float[3];
+                                    for (int i = 0; i < 3; i++)
+                                    {
+                                        accel[i] = new byte[4];
+                                        Array.Copy(bytes, 15 + (i * 4), accel[i], 0, 4);
+                                        Array.Reverse(accel[i]);
+                                        accelValue[i] = (float)BitConverter.ToSingle(accel[i], 0);
+                                    }
+                                    byte[] temperatureIMU = new byte[4];
+                                    Array.Copy(bytes, 27, temperatureIMU, 0, 4);
+                                    Array.Reverse(temperatureIMU);
+                                    float temperatureIMUValue = (float)BitConverter.ToSingle(temperatureIMU, 0);
+                                    IMUField.text = "Gyro: " + gyroValue[0].ToString("000.0") + ", " + gyroValue[1].ToString("000.0") + ", " + gyroValue[2].ToString("000.0") 
+                                                        + "\nAccel: " + accelValue[0].ToString("000.0") + ", " + accelValue[1].ToString("000.0") + ", " + accelValue[2].ToString("000.0")
+                                                        + "\nTemperature(IMU): " + temperatureIMUValue.ToString("F2") + " celcius";
+                                    break;
+                                // Temperature
+                                case 0x34:
+                                    byte[] temperature = new byte[2];
+                                    Array.Copy(bytes, 3, temperature, 0, 2);
+                                    Array.Reverse(temperature);
+                                    //Debug.Log("OK");
+                                    float temperatureValue = (float)(BitConverter.ToUInt16(temperature, 0) * 0.01);
+                                    //Debug.Log("OK1");
+                                    temperatureField.text = "Temperature: " + temperatureValue.ToString("F2") + " celcius";
+                                    break;
+                                // Pressure Mapping
+                                case 0x36:
+                                    byte[][] pressureMapping = new byte[7][];
+                                    for (int i = 0; i < 7; i++)
+                                    {
+                                        pressureMapping[i] = new byte[4];
+                                        Array.Copy(bytes, 3 + (i * 4), pressureMapping[i], 0, 4);
+                                    }
+
+                                    // Convert pressureMapping to an array of string arrays
+                                    string[][] pressureMappingDec = new string[pressureMapping.Length][];
+                                    for (int i = 0; i < pressureMapping.Length; i++)
+                                    {
+                                        pressureMappingDec[i] = new string[pressureMapping[i].Length];
+                                        for (int j = 0; j < pressureMapping[i].Length; j++)
+                                        {
+                                            pressureMappingDec[i][j] = pressureMapping[i][j].ToString();
+                                        }
+                                    }
+
+                                    // Creating a JSON object with the extracted fields
+                                    var dataJson = new PressureData
+                                    {
+                                        Start_byte = startByte.ToString("X2"),
+                                        Protocol_ID = protocolID.ToString("X2"),
+                                        Data_len = dataLen,
+                                        Pressure_mapping = pressureMappingDec, // Convert each inner array to a string and make it an array
+                                        Check_sum = checkSum[0].ToString("X2") + checkSum[1].ToString("X2"),
+                                        Stop_byte = stopByte.ToString("X2")
+                                    };
+
+                                    string jsonData = JsonConvert.SerializeObject(dataJson);
+                                    //// Displaying the Pressure_mapping property in the PressureData object
+                                    //string pressureMappingString = string.Join(",\n", dataJson.Pressure_mapping.Select(arr => string.Join(" ", arr)));
+
+                                    //setFieldText(pressureMappingString);
+                                    //box.text += "\n" + pressureMappingString;
+                                    break;
+                                // State and Speed
+                                case 0x50:
+                                    byte stateInsole = bytes[3];
+                                    int stateInsoleValue = stateInsole;
+                                    byte[] speed = new byte[4];
+                                    Array.Copy(bytes, 4, speed, 0, 4);
+                                    Array.Reverse(speed);
+                                    float speedValue = (float)BitConverter.ToSingle(speed, 0);
+                                    stateAndSpeedField.text = "State: " + INSOLE_STATE[stateInsoleValue]
+                                                        + "\nSpeed: " + speedValue.ToString("F2") + " m/s";
+                                    break;
+                                // Foot Clearance
+                                case 0x54:
+                                    byte[] footClearance = new byte[4];
+                                    Array.Copy(bytes, 3, footClearance, 0, 4);
+                                    Array.Reverse(footClearance);
+                                    float footClearanceValue = (float)(BitConverter.ToSingle(footClearance, 0));
+                                    footClearanceField.text = "Foot Height: " + footClearanceValue.ToString("F2") + " radian";
+                                    break;
+                                default:
+                                    //setFieldText(((Int32)startByte).ToString() + " - " + 0x30.ToString());
+                                    break;
                             }
-                            byte checkSum = bytes[32];
-                            byte stopByte = bytes[33];
-
-                            // Check if protocolID is not equal to 0x32
-                            //box.text += "\n" + protocolID.ToString("X2");
-                            if (protocolID != 0x32)
-                            {
-                                //setFieldText("Protocol ID does not match the condition.");
-                                //box.text += "\nProtocol ID does not match the condition.";
-                                return;
-                            }
-                            else
-                            {
-                                //box.text += "\nProtocol ID match the condition.";
-                            }
-
-                            // Convert pressureMapping to an array of string arrays
-                            string[][] pressureMappingDec = new string[pressureMapping.Length][];
-                            for (int i = 0; i < pressureMapping.Length; i++)
-                            {
-                                pressureMappingDec[i] = new string[pressureMapping[i].Length];
-                                for (int j = 0; j < pressureMapping[i].Length; j++)
-                                {
-                                    pressureMappingDec[i][j] = pressureMapping[i][j].ToString();
-                                }
-                            }
-
-                            // Creating a JSON object with the extracted fields
-                            var dataJson = new PressureData
-                            {
-                                Start_byte = startByte.ToString("X2"),
-                                Protocol_ID = protocolID.ToString("X2"),
-                                Data_len = dataLen,
-                                Pressure_mapping = pressureMappingDec, // Convert each inner array to a string and make it an array
-                                Check_sum = checkSum.ToString("X2"),
-                                Stop_byte = stopByte.ToString("X2")
-                            };
-
-                            string jsonData = JsonConvert.SerializeObject(dataJson);
-                            string hexString = BitConverter.ToString(bytes).Replace("-", ""); // Convert bytes to hex string
-                                                                                              // Displaying the Pressure_mapping property in the PressureData object
-                            string pressureMappingString = string.Join(",\n", dataJson.Pressure_mapping.Select(arr => string.Join(" ", arr)));
-
-                            //setFieldText("Received JSON Data: " + jsonData + "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString);
-                            //box.text += "\nReceived JSON Data: " + jsonData + "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString;
-                            setFieldText(pressureMappingString);
-                            box.text += "\n"+ pressureMappingString;
+                            
                         });
 
                         // set to the none state and the user can start sending and receiving data
