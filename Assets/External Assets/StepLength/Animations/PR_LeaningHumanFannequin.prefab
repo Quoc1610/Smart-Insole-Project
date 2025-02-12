@@ -2327,23 +2327,12 @@ MonoBehaviour:
   movementJoystick: {fileID: 0}
   uiController: {fileID: 0}
   MovementSpeed: 4
-  RotateToSpeed: 0
-  FixedRotation: 0
-  DirectMovement: 1
   Interia: 0
-  GroundMask:
-    serializedVersion: 2
-    m_Bits: 1
-  ExtraRaycastDistance: 0.02
-  RaycastRadius: 0
   Mecanim: {fileID: 4006285734411122078}
   IsBusyProperty: 
-  DisableRootMotion: 1
   UpdateInput: 1
-  JumpPower: 3
-  HoldShiftForSpeed: 5.5
-  HoldCtrlForSpeed: 2
   moveDirectionLocalZ: 0
+  isAutoMode: 1
 --- !u!1 &7686166449259539101
 GameObject:
   m_ObjectHideFlags: 0
