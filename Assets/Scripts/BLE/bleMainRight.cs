@@ -7,6 +7,7 @@ using System;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Runtime.InteropServices;
+using FIMSpace.RagdollAnimatorDemo;
 
 public class bleMainRight : MonoBehaviour
 {
@@ -94,6 +95,7 @@ public class bleMainRight : MonoBehaviour
 
     private GameObject footBone;
     private GameObject body;
+    [Range(0f, 8f)] public float speedTest = 0f;
     void Reset()
     {
         _workingFoundDevice = false;    // used to guard against trying to connect to a second device while still connecting to the first
@@ -364,19 +366,22 @@ public class bleMainRight : MonoBehaviour
                             }
                             // Creating a JSON object with the extracted fields
                             string jsonData = JsonConvert.SerializeObject(dataJson);
-                            Vector3 accelData = new Vector3(dataJson.accelValue[0], dataJson.accelValue[1], dataJson.accelValue[2]);
-                            Vector3 gyroData = new Vector3((int)(dataJson.gyroValue[0])*-1, (int)(dataJson.gyroValue[2])*-1, (int)(dataJson.gyroValue[1])*-1);
-                            //// Integrate gyro data to update rotation angles
-                            Vector3 rotationAdjustment = gyroData * Time.deltaTime;
+                            //Vector3 accelData = new Vector3(dataJson.accelValue[0], dataJson.accelValue[1], dataJson.accelValue[2]);
+                            //Vector3 gyroData = new Vector3((int)(dataJson.gyroValue[0])*-1, (int)(dataJson.gyroValue[2])*-1, (int)(dataJson.gyroValue[1])*-1);
+                            ////// Integrate gyro data to update rotation angles
+                            //Vector3 rotationAdjustment = gyroData * Time.deltaTime;
 
-                            // Apply rotation adjustments to the foot bone
-                            body.transform.Rotate(rotationAdjustment);
+                            //// Apply rotation adjustments to the foot bone
+                            //body.transform.Rotate(rotationAdjustment);
 
                             //// Calculate position adjustments based on accelerometer data
                             //Vector3 positionAdjustment = accelData * 2f* Time.deltaTime;
 
                             //// Apply position adjustments to the foot bone
                             //body.transform.position += positionAdjustment;
+                            FBasic_RigidbodyMover fb = body.GetComponent<FBasic_RigidbodyMover>();
+                            if (fb != null) fb.setSpeed(dataJson.speedValue);
+                            else Debug.Log("Null");
 
                         });
 

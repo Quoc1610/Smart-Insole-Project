@@ -151,9 +151,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1972084917}
   - {fileID: 167361813}
   - {fileID: 214944500}
+  - {fileID: 1972084917}
   m_Father: {fileID: 1922231172}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &54318034
@@ -1433,6 +1433,7 @@ MonoBehaviour:
   temperatureField: {fileID: 1371621582}
   stateAndSpeedField: {fileID: 914030445}
   footClearanceField: {fileID: 755820687}
+  speedTest: 0
 --- !u!1 &293920326
 GameObject:
   m_ObjectHideFlags: 0

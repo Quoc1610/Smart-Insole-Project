@@ -237,7 +237,7 @@ namespace FIMSpace.RagdollAnimatorDemo
                     targetRotation = Quaternion.Euler(0f, rotationAngle, 0f);// Quaternion.RotateTowards(targetRotation, targetInstantRotation, Time.deltaTime * 90f * RotateToSpeed);
                 }
 
-            if (Mecanim) Mecanim.SetBool("Moving", moving);
+            //if (Mecanim) Mecanim.SetBool("Moving", moving);
 
             float spd = MovementSpeed;
 
@@ -276,11 +276,26 @@ namespace FIMSpace.RagdollAnimatorDemo
             }
             else
             {
-                //transform.rotation = targetInstantRotation;
+                transform.rotation = targetInstantRotation;
             }
 
-            if (Mecanim) if (moving) Mecanim.SetFloat("Speed", currentWorldAccel.magnitude);
+            //if (Mecanim) if (moving) Mecanim.SetFloat("Speed", currentWorldAccel.magnitude);
+            //Debug.Log(currentWorldAccel.magnitude);
             moveDirectionWorld = Vector3.zero;
+        }
+
+        public void setSpeed(float spd)
+        {
+            if (Mecanim)
+            {
+                if (spd==0) Mecanim.SetBool("Moving", false);
+                else
+                {
+                    Mecanim.SetBool("Moving", true);
+                    Mecanim.SetFloat("Speed", spd);
+                }
+                
+            }
         }
 
 
