@@ -492,7 +492,7 @@ GameObject:
   - component: {fileID: 1160085066425711074}
   m_Layer: 0
   m_Name: B_Ankle_L
-  m_TagString: Untagged
+  m_TagString: InsoleL
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -653,7 +653,7 @@ GameObject:
   - component: {fileID: 381645881766888034}
   m_Layer: 0
   m_Name: B_Ankle_R
-  m_TagString: Untagged
+  m_TagString: InsoleR
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2071,7 +2071,7 @@ GameObject:
   - component: {fileID: 604693092786898713}
   m_Layer: 0
   m_Name: PR_LeaningHumanFannequin
-  m_TagString: Untagged
+  m_TagString: Model
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2320,10 +2320,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5801e28e1e70b6046891201f31ab875c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ModeJoystick: 1
   stepLength: 0
   speedAnim: 1
   Rigb: {fileID: 7418477587794328377}
   movementJoystick: {fileID: 0}
+  uiController: {fileID: 0}
   MovementSpeed: 4
   RotateToSpeed: 0
   FixedRotation: 0
@@ -2341,6 +2343,7 @@ MonoBehaviour:
   JumpPower: 3
   HoldShiftForSpeed: 5.5
   HoldCtrlForSpeed: 2
+  moveDirectionLocalZ: 0
 --- !u!1 &7686166449259539101
 GameObject:
   m_ObjectHideFlags: 0

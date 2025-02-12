@@ -14,13 +14,13 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/ARNew.unity
     guid: 436b1ce3de487714d91a5861be4ed571
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/AR 1.unity
     guid: 01aed1118232d1f4d9fda9a2f725f3e7
   - enabled: 0
     path: Assets/Scenes/Test/BluetoothLowEnergyExample/Scenes/BluetoothLowEnergyExample.unity
     guid: cce666b9870e2f544b13c5839a758dd9
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/BLE.unity
     guid: eaf1dcb695afe8e4c9d7da90403dc5a1
   m_configObjects:

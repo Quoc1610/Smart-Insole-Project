@@ -1427,7 +1427,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000030517578}
+  m_AnchoredPosition: {x: 0, y: 300.00003}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1362080038
@@ -1611,7 +1611,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1447529464}
-  - component: {fileID: 1447529463}
+  - component: {fileID: 1447529465}
   m_Layer: 0
   m_Name: bleManager
   m_TagString: Untagged
@@ -1619,26 +1619,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1447529463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1447529462}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3cc27ad56bb4b864cb7b8714b0727faa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  field: {fileID: 720971510}
-  box: {fileID: 1362080039}
-  batteryField: {fileID: 828249841}
-  chargerField: {fileID: 1722621235}
-  IMUField: {fileID: 1456785833}
-  temperatureField: {fileID: 1200161716}
-  stateAndSpeedField: {fileID: 473527226}
-  footClearanceField: {fileID: 783535965}
 --- !u!4 &1447529464
 Transform:
   m_ObjectHideFlags: 0
@@ -1654,6 +1634,32 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1447529465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1447529462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f72ef7e96e9bf9b49ab255c285d832e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DeviceName: Kinis 003
+  ServiceUUID: 6e400001-b5a3-f393-e0a9-e50e24dcca9e
+  Characteristic: 6e400003-b5a3-f393-e0a9-e50e24dcca9e
+  Name: {fileID: 0}
+  status: {fileID: 0}
+  icon: {fileID: 0}
+  field: {fileID: 720971510}
+  box: {fileID: 1362080039}
+  batteryField: {fileID: 828249841}
+  chargerField: {fileID: 1722621235}
+  IMUField: {fileID: 1456785833}
+  temperatureField: {fileID: 1200161716}
+  stateAndSpeedField: {fileID: 473527226}
+  footClearanceField: {fileID: 783535965}
 --- !u!1 &1456785831
 GameObject:
   m_ObjectHideFlags: 0

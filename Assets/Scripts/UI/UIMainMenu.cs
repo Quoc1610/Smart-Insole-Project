@@ -29,6 +29,7 @@ public class UIMainMenu : MonoBehaviour
         UIManager._instance.goJoystick.SetActive(true);
         UIManager._instance.uiController.mode = 1;
         UIManager._instance.uiController.gameObject.SetActive(true);
+        UIManager._instance.bleManager.gameObject.SetActive(true);
         this.gameObject.SetActive(false);
         UIManager._instance.uiInApp.gameObject.SetActive(true);
 
@@ -44,6 +45,7 @@ public class UIMainMenu : MonoBehaviour
         UIManager._instance.goJoystick.SetActive(true);
         UIManager._instance.uiController.mode = 0;
         UIManager._instance.uiController.gameObject.SetActive(true);
+        UIManager._instance.bleManager.gameObject.SetActive(true);
         this.gameObject.SetActive(false);
         UIManager._instance.uiInApp.gameObject.SetActive(true);
 

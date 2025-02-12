@@ -40,8 +40,10 @@ public class UIInApp : MonoBehaviour
         sliderMoveSpeed.minValue=2;
         lsgoBorder[0].SetActive(true);
         lsgoBorder[1].SetActive(false);
+        lsgoBorder[2].SetActive(false);
         lsgoTab[0].SetActive(true);
         lsgoTab[1].SetActive(false);
+        lsgoTab[2].SetActive(false);
     }
 
     public void OnSliderSpeedChange()
@@ -102,17 +104,29 @@ public class UIInApp : MonoBehaviour
         }
     }
     public void OnBtnTabClick(int index){
-        if(index==0){
-            lsgoBorder[0].SetActive(true);
-            lsgoBorder[1].SetActive(false);
-            lsgoTab[0].SetActive(true);
-            lsgoTab[1].SetActive(false);
+
+        //if(index==0){
+        //    lsgoBorder[0].SetActive(true);
+        //    lsgoBorder[1].SetActive(false);
+        //    lsgoTab[0].SetActive(true);
+        //    lsgoTab[1].SetActive(false);
+
+        //}
+        //else{
+        //    lsgoBorder[0].SetActive(false);
+        //    lsgoBorder[1].SetActive(true);
+        //    lsgoTab[0].SetActive(false);
+        //    lsgoTab[1].SetActive(true);
+        //}
+        for (int i = 0; i < lsgoBorder.Count; i++)
+        {
+            lsgoBorder[i].SetActive(false);
+            lsgoTab[i].SetActive(false);
         }
-        else{
-            lsgoBorder[0].SetActive(false);
-            lsgoBorder[1].SetActive(true);
-            lsgoTab[0].SetActive(false);
-            lsgoTab[1].SetActive(true);
-        }
+        lsgoBorder[index].SetActive(true);
+        lsgoTab[index].SetActive(true);
+
     }
 }
+
+

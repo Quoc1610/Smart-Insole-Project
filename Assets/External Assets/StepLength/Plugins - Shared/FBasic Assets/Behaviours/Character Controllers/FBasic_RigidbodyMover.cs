@@ -135,7 +135,16 @@ namespace FIMSpace.RagdollAnimatorDemo
         float sd_rotationAngle = 0f;
         float toJump = 0f;
 
+        private Vector3 rotationAdjustment = Vector3.zero;
+
         public bool isGrounded { get; private set; } = true;
+
+        public void changeRotation(Vector3 gyroData)
+        {
+            //// Integrate gyro data to update rotation angles
+            rotationAdjustment.x = gyroData.x;
+            rotationAdjustment.z = gyroData.y;
+        }
 
         protected virtual void Update()
         {
@@ -267,7 +276,7 @@ namespace FIMSpace.RagdollAnimatorDemo
             }
             else
             {
-                transform.rotation = targetInstantRotation;
+                //transform.rotation = targetInstantRotation;
             }
 
             if (Mecanim) if (moving) Mecanim.SetFloat("Speed", currentWorldAccel.magnitude);

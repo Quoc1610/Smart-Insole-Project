@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-public class bleMain : MonoBehaviour
+public class bleMainLeft : MonoBehaviour
 {
     [SerializeField] private string DeviceName = "Kinis 003";
     //private string ServiceUUID = "6e400001"; // 6e400001-b5a3-f393-e0a9-e50e24dcca9e
@@ -79,7 +79,7 @@ public class bleMain : MonoBehaviour
     [SerializeField] private TextMeshProUGUI status;
 
     [SerializeField] private GameObject icon;
-    private bool isIcon = false;
+    private bool isIcon = true;
 
 
     [SerializeField] private TextMeshProUGUI field;
@@ -91,6 +91,8 @@ public class bleMain : MonoBehaviour
     [SerializeField] private TextMeshProUGUI temperatureField;
     [SerializeField] private TextMeshProUGUI stateAndSpeedField;
     [SerializeField] private TextMeshProUGUI footClearanceField;
+
+    private GameObject footBone;
     void Reset()
     {
         _workingFoundDevice = false;    // used to guard against trying to connect to a second device while still connecting to the first
@@ -127,15 +129,15 @@ public class bleMain : MonoBehaviour
 
     public void StartProcess()
     {
-        //Name.text = DeviceName;
+        Name.text = DeviceName;
         setFieldText("Initializing...");
-        //setStatusText("Initializing");
+        setStatusText("Initializing");
         Reset();
         BluetoothLEHardwareInterface.Initialize(true, false, () => {
 
             SetState(States.Scan, 0.1f);
             setFieldText("Initializing...");
-            //setStatusText("Initializing");
+            setStatusText("Initializing");
 
         }, (error) => {
 
@@ -146,6 +148,12 @@ public class bleMain : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        while( footBone == null)
+        {
+            footBone = GameObject.FindGameObjectWithTag("InsoleL");
+            Debug.Log("Fail Left");
+        }
+        Debug.Log("Success Left");
         StartProcess();
     }
 
@@ -166,7 +174,7 @@ public class bleMain : MonoBehaviour
 
                     case States.Scan:
                         setFieldText("Scanning for ESP32 devices...");
-                        //setStatusText("Scanning");
+                        setStatusText("Scanning");
 
                         BluetoothLEHardwareInterface.ScanForPeripheralsWithServices(null, (address, name) => {
 
@@ -195,7 +203,7 @@ public class bleMain : MonoBehaviour
                         // set these flags
                         _foundID = false;
                         setFieldText("Connecting to esp32");
-                        //setStatusText("Connecting");
+                        setStatusText("Connecting");
 
                         // note that the first parameter is the address, not the name. I have not fixed this because
                         // of backwards compatiblity.
@@ -216,14 +224,14 @@ public class bleMain : MonoBehaviour
                                     SetState(States.Subscribe, 2f);
 
                                     setFieldText("Connected to ESP32");
-                                    //setStatusText("Connected");
+                                    setStatusText("Connected");
                                     toggleIcon();
                                 }
                             }
                         }, (disconnectedAddress) => {
                             BluetoothLEHardwareInterface.Log("Device disconnected: " + disconnectedAddress);
                             setFieldText("Disconnected");
-                            //setStatusText("Disconnected");
+                            setStatusText("Disconnected");
                             toggleIcon();
                         });
                         break;
@@ -234,7 +242,7 @@ public class bleMain : MonoBehaviour
                         BluetoothLEHardwareInterface.SubscribeCharacteristicWithDeviceAddress(_deviceAddress, ServiceUUID, Characteristic, null, (address, characteristicUUID, bytes) => {
                             string hexString = BitConverter.ToString(bytes).Replace("-", ""); // Convert bytes to hex string
                             setFieldText("byte length: " + bytes.Length + ", Data: 0x" + hexString);
-                            box.text += "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString;
+                            //box.text += "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString;
 
                             // Extracting individual fields from the byte array
                             byte startByte = bytes[0];
@@ -252,14 +260,14 @@ public class bleMain : MonoBehaviour
                                     Array.Copy(bytes, 3, battery, 0, 2);
                                     Array.Reverse(battery);
                                     int batteryValue = BitConverter.ToUInt16(battery, 0);
-                                    batteryField.text = "Battery: " + batteryValue.ToString("D3") + "%";
+                                    //batteryField.text = "Battery: " + batteryValue.ToString("D3") + "%";
                                     dataJson.batteryValue = batteryValue;
                                     break;
                                 // Charger
                                 case 0x31:
                                     byte charger = bytes[3];
                                     int chargerValue = charger;
-                                    chargerField.text = "Charger State: " + CHARGER_STATE[chargerValue];
+                                    //chargerField.text = "Charger State: " + CHARGER_STATE[chargerValue];
                                     dataJson.chargerValue = chargerValue;
                                     break;
                                 // IMU
@@ -286,9 +294,9 @@ public class bleMain : MonoBehaviour
                                     Array.Copy(bytes, 27, temperatureIMU, 0, 4);
                                     Array.Reverse(temperatureIMU);
                                     float temperatureIMUValue = (float)BitConverter.ToSingle(temperatureIMU, 0);
-                                    IMUField.text = "Gyro: " + gyroValue[0].ToString("000.0") + ", " + gyroValue[1].ToString("000.0") + ", " + gyroValue[2].ToString("000.0")
-                                                        + "\nAccel: " + accelValue[0].ToString("000.0") + ", " + accelValue[1].ToString("000.0") + ", " + accelValue[2].ToString("000.0")
-                                                        + "\nTemperature(IMU): " + temperatureIMUValue.ToString("F2") + " celcius";
+                                    //IMUField.text = "Gyro: " + gyroValue[0].ToString("000.0") + ", " + gyroValue[1].ToString("000.0") + ", " + gyroValue[2].ToString("000.0")
+                                    //                    + "\nAccel: " + accelValue[0].ToString("000.0") + ", " + accelValue[1].ToString("000.0") + ", " + accelValue[2].ToString("000.0")
+                                    //                    + "\nTemperature(IMU): " + temperatureIMUValue.ToString("F2") + " celcius";
                                     dataJson.gyroValue = gyroValue;
                                     dataJson.accelValue = accelValue;
                                     break;
@@ -300,13 +308,13 @@ public class bleMain : MonoBehaviour
                                     //Debug.Log("OK");
                                     float temperatureValue = (float)(BitConverter.ToUInt16(temperature, 0) * 0.01);
                                     //Debug.Log("OK1");
-                                    temperatureField.text = "Temperature: " + temperatureValue.ToString("F2") + " celcius";
+                                    //temperatureField.text = "Temperature: " + temperatureValue.ToString("F2") + " celcius";
                                     dataJson.temperatureValue = temperatureValue;
                                     break;
                                 // Pressure Mapping
                                 case 0x36:
                                     byte[][] pressureMapping = new byte[7][];
-                                    float[] pressureMappingValue = new float[7];
+                                    float[] pressureMappingValue = new float[4];
                                     for (int i = 0; i < 7; i++)
                                     {
                                         pressureMapping[i] = new byte[4];
@@ -315,10 +323,10 @@ public class bleMain : MonoBehaviour
                                         pressureMappingValue[i] = (float)(BitConverter.ToInt32(pressureMapping[i], 0) * 0.01);
                                     }
                                     //// Displaying the Pressure_mapping property in the PressureData object
-                                    string pressureMappingString = string.Join(",\n", pressureMappingValue.Select(arr => string.Join(" ", arr)));
+                                    //string pressureMappingString = string.Join(",\n", dataJson.Pressure_mapping.Select(arr => string.Join(" ", arr)));
 
-                                    setFieldText(pressureMappingString);
-                                    box.text += "\n" + pressureMappingString;
+                                    //setFieldText(pressureMappingString);
+                                    //box.text += "\n" + pressureMappingString;
                                     dataJson.pressureMappingValue = pressureMappingValue;
                                     break;
                                 // State and Speed
@@ -329,8 +337,8 @@ public class bleMain : MonoBehaviour
                                     Array.Copy(bytes, 4, speed, 0, 4);
                                     Array.Reverse(speed);
                                     float speedValue = (float)BitConverter.ToSingle(speed, 0);
-                                    stateAndSpeedField.text = "State: " + INSOLE_STATE[stateInsoleValue]
-                                                        + "\nSpeed: " + speedValue.ToString("F2") + " m/s";
+                                    //stateAndSpeedField.text = "State: " + INSOLE_STATE[stateInsoleValue]
+                                    //                    + "\nSpeed: " + speedValue.ToString("F2") + " m/s";
                                     dataJson.stateInsoleValue = stateInsoleValue;
                                     dataJson.speedValue = speedValue;
                                     break;
@@ -340,16 +348,26 @@ public class bleMain : MonoBehaviour
                                     Array.Copy(bytes, 3, footClearance, 0, 4);
                                     Array.Reverse(footClearance);
                                     float footClearanceValue = (float)(BitConverter.ToSingle(footClearance, 0));
-                                    footClearanceField.text = "Foot Height: " + footClearanceValue.ToString("F2") + " radian";
+                                    //footClearanceField.text = "Foot Height: " + footClearanceValue.ToString("F2") + " radian";
                                     dataJson.footClearanceValue = footClearanceValue;
                                     break;
                                 default:
                                     setFieldText("Unkown Protocol: " + (protocolID).ToString());
-                                    box.text += "\nUnkown Protocol: " +(protocolID).ToString();
+                                    //box.text += "\nUnkown Protocol: "+(protocolID).ToString();
                                     break;
                             }
                             // Creating a JSON object with the extracted fields
                             string jsonData = JsonConvert.SerializeObject(dataJson);
+                            Vector3 accelData = new Vector3(dataJson.accelValue[0], dataJson.accelValue[1], dataJson.accelValue[2]);
+                            Vector3 gyroData = new Vector3(dataJson.gyroValue[0], dataJson.gyroValue[1], dataJson.gyroValue[2]);
+                            // Integrate gyro data to update rotation angles
+                            Vector3 rotationAdjustment = gyroData * Time.deltaTime;
+
+                            // Calculate position adjustments based on accelerometer data
+                            Vector3 positionAdjustment = accelData * Time.deltaTime;
+
+                            // Apply position adjustments to the foot bone
+                            footBone.transform.position += positionAdjustment;
                         });
 
                         // set to the none state and the user can start sending and receiving data
