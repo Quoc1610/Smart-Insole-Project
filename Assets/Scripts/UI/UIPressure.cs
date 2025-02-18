@@ -123,17 +123,24 @@ public class UIPressure : MonoBehaviour
         }
     }
 
-    public void ResetHeightGrid()
+    public void ResetHeightGrid(int i)
     {
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                gridLeftTiles[x, y].realValue = 0;
-                gridLeftTiles[x, y].GetColorBasedOnValue(0);
+                if (i == 0)
+                {
+                    gridLeftTiles[x, y].realValue = 0;
+                    gridLeftTiles[x, y].GetColorBasedOnValue(0);
+                }
+                else
+                {
+                    gridRightTiles[x, y].realValue = 0;
+                    gridRightTiles[x, y].GetColorBasedOnValue(0);
+                }
 
-                gridRightTiles[x, y].realValue = 0;
-                gridRightTiles[x, y].GetColorBasedOnValue(0);
+                
             }
         }
     }

@@ -129,7 +129,6 @@ public class bleMainRight : MonoBehaviour
         isIcon = !isIcon;
         icon.SetActive(isIcon);
     }
-
     public void StartProcess()
     {
         Name.text = DeviceName;

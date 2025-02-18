@@ -201,58 +201,82 @@ namespace FIMSpace.RagdollAnimatorDemo
             moveDirectionWorld = Vector3.zero;
         }
 
-        public void OnPressure(int side)
+        int convertPressure(float p)
         {
-            //UIManager._instance.uiPressure.textDebug.text="";
-            UIManager._instance.uiPressure.ResetHeightGrid();
+            float result = ((p - 10000) / 10000) * 1000;
+            return (int)Mathf.Round(result);
+        }
+        public void OnReceivePressure(int side, float[] pressureMaps)
+        {
+            UIManager._instance.uiPressure.ResetHeightGrid(side);
             if (side == 0)
             {
-                UIManager._instance.uiPressure.gridLeftTiles[15,8].OnClicked(80,0);
-                UIManager._instance.uiPressure.gridLeftTiles[21, 43].OnClicked(80, 0);
-                UIManager._instance.uiPressure.gridLeftTiles[9, 42].OnClicked(80, 0);
-                UIManager._instance.uiPressure.gridLeftTiles[25, 57].OnClicked(80, 0);
+                UIManager._instance.uiPressure.gridLeftTiles[15, 8].OnClicked(convertPressure(pressureMaps[3]), 0);
+                UIManager._instance.uiPressure.gridLeftTiles[21, 43].OnClicked(convertPressure(pressureMaps[0]), 0);
+                UIManager._instance.uiPressure.gridLeftTiles[9, 42].OnClicked(convertPressure(pressureMaps[2]), 0);
+                UIManager._instance.uiPressure.gridLeftTiles[25, 57].OnClicked(convertPressure(pressureMaps[1]), 0);
             }
             else
             {
-                UIManager._instance.uiPressure.gridRightTiles[16,8].OnClicked(80,1);
-                UIManager._instance.uiPressure.gridRightTiles[22, 41].OnClicked(80, 1);
-                UIManager._instance.uiPressure.gridRightTiles[11, 40].OnClicked(80, 1);
-                UIManager._instance.uiPressure.gridRightTiles[6, 55].OnClicked(80, 1);
+                UIManager._instance.uiPressure.gridRightTiles[16, 8].OnClicked(convertPressure(pressureMaps[0]), 1);
+                UIManager._instance.uiPressure.gridRightTiles[22, 41].OnClicked(convertPressure(pressureMaps[1]), 1);
+                UIManager._instance.uiPressure.gridRightTiles[11, 40].OnClicked(convertPressure(pressureMaps[3]), 1);
+                UIManager._instance.uiPressure.gridRightTiles[6, 55].OnClicked(convertPressure(pressureMaps[2]), 1);
             }
+        }
+
+        public void OnPressure(int side)
+        {
+            //UIManager._instance.uiPressure.textDebug.text="";
+            //UIManager._instance.uiPressure.ResetHeightGrid();
+            //if (side == 0)
+            //{
+            //    UIManager._instance.uiPressure.gridLeftTiles[15,8].OnClicked(80,0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[21, 43].OnClicked(80, 0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[9, 42].OnClicked(80, 0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[25, 57].OnClicked(80, 0);
+            //}
+            //else
+            //{
+            //    UIManager._instance.uiPressure.gridRightTiles[16,8].OnClicked(80,1);
+            //    UIManager._instance.uiPressure.gridRightTiles[22, 41].OnClicked(80, 1);
+            //    UIManager._instance.uiPressure.gridRightTiles[11, 40].OnClicked(80, 1);
+            //    UIManager._instance.uiPressure.gridRightTiles[6, 55].OnClicked(80, 1);
+            //}
             
         }
         public void OnPressureWalkZero(int side)
         {
             //UIManager._instance.uiPressure.textDebug.text="";
-            UIManager._instance.uiPressure.ResetHeightGrid();
-            if (side == 0)
-            {
-                //right 60
-                UIManager._instance.uiPressure.gridRightTiles[16, 8].OnClicked(60, 1);
-                UIManager._instance.uiPressure.gridRightTiles[22, 41].OnClicked(60, 1);
-                UIManager._instance.uiPressure.gridRightTiles[11, 40].OnClicked(60, 1);
-                UIManager._instance.uiPressure.gridRightTiles[6, 55].OnClicked(60, 1);
+            //UIManager._instance.uiPressure.ResetHeightGrid();
+            //if (side == 0)
+            //{
+            //    //right 60
+            //    UIManager._instance.uiPressure.gridRightTiles[16, 8].OnClicked(60, 1);
+            //    UIManager._instance.uiPressure.gridRightTiles[22, 41].OnClicked(60, 1);
+            //    UIManager._instance.uiPressure.gridRightTiles[11, 40].OnClicked(60, 1);
+            //    UIManager._instance.uiPressure.gridRightTiles[6, 55].OnClicked(60, 1);
 
-                //left 80
-                UIManager._instance.uiPressure.gridLeftTiles[15, 8].OnClicked(80, 0);
-                UIManager._instance.uiPressure.gridLeftTiles[21, 43].OnClicked(80, 0);
-                UIManager._instance.uiPressure.gridLeftTiles[9, 42].OnClicked(80, 0);
-                UIManager._instance.uiPressure.gridLeftTiles[25, 57].OnClicked(80, 0);
-            }
-            else
-            {
-                //right 80
-                UIManager._instance.uiPressure.gridRightTiles[16, 8].OnClicked(80, 1);
-                UIManager._instance.uiPressure.gridRightTiles[22, 41].OnClicked(80, 1);
-                UIManager._instance.uiPressure.gridRightTiles[11, 40].OnClicked(80, 1);
-                UIManager._instance.uiPressure.gridRightTiles[6, 55].OnClicked(80, 1);
+            //    //left 80
+            //    UIManager._instance.uiPressure.gridLeftTiles[15, 8].OnClicked(80, 0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[21, 43].OnClicked(80, 0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[9, 42].OnClicked(80, 0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[25, 57].OnClicked(80, 0);
+            //}
+            //else
+            //{
+            //    //right 80
+            //    UIManager._instance.uiPressure.gridRightTiles[16, 8].OnClicked(80, 1);
+            //    UIManager._instance.uiPressure.gridRightTiles[22, 41].OnClicked(80, 1);
+            //    UIManager._instance.uiPressure.gridRightTiles[11, 40].OnClicked(80, 1);
+            //    UIManager._instance.uiPressure.gridRightTiles[6, 55].OnClicked(80, 1);
 
-                //left 60
-                UIManager._instance.uiPressure.gridLeftTiles[15, 8].OnClicked(60, 0);
-                UIManager._instance.uiPressure.gridLeftTiles[21, 43].OnClicked(60, 0);
-                UIManager._instance.uiPressure.gridLeftTiles[9, 42].OnClicked(60, 0);
-                UIManager._instance.uiPressure.gridLeftTiles[25, 57].OnClicked(60, 0);
-            }
+            //    //left 60
+            //    UIManager._instance.uiPressure.gridLeftTiles[15, 8].OnClicked(60, 0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[21, 43].OnClicked(60, 0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[9, 42].OnClicked(60, 0);
+            //    UIManager._instance.uiPressure.gridLeftTiles[25, 57].OnClicked(60, 0);
+            //}
             
         }
     }

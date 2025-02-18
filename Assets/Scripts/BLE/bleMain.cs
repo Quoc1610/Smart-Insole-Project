@@ -16,17 +16,6 @@ public class bleMain : MonoBehaviour
 
     [SerializeField] private string ServiceUUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     [SerializeField] private string Characteristic = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-
-    public class PressureData
-    {
-        public string Start_byte;
-        public string Protocol_ID;
-        public int Data_len;
-        public float[] Pressure_mapping;
-        public string Check_sum;
-        public string Stop_byte;
-    }
-
     public class Data
     {
         public int batteryValue;
@@ -34,9 +23,14 @@ public class bleMain : MonoBehaviour
         public float[] gyroValue;
         public float[] accelValue;
         public float temperatureValue;
+        public float uwbValue;
         public float[] pressureMappingValue;
         public int stateInsoleValue;
         public float speedValue;
+        public float stepLengthValue;
+        public float strideLengthValue;
+        public float stepWidthValue;
+        public float stepAngleValue;
         public float footClearanceValue;
     }
 
@@ -47,9 +41,12 @@ public class bleMain : MonoBehaviour
         gyroValue = null,
         accelValue = null,
         temperatureValue = 0,
+        uwbValue = 0,
         pressureMappingValue = null,
         stateInsoleValue = 0,
         speedValue = 0,
+        stepLengthValue = 0,
+        strideLengthValue = 0,
         footClearanceValue = 0
     };
 
@@ -89,7 +86,12 @@ public class bleMain : MonoBehaviour
     [SerializeField] private TextMeshProUGUI chargerField;
     [SerializeField] private TextMeshProUGUI IMUField;
     [SerializeField] private TextMeshProUGUI temperatureField;
+    [SerializeField] private TextMeshProUGUI uwbField;
+    [SerializeField] private TextMeshProUGUI pressureField;
     [SerializeField] private TextMeshProUGUI stateAndSpeedField;
+    [SerializeField] private TextMeshProUGUI stepEventField;
+    [SerializeField] private TextMeshProUGUI stepWidthField;
+    [SerializeField] private TextMeshProUGUI stepAngleField;
     [SerializeField] private TextMeshProUGUI footClearanceField;
     void Reset()
     {
@@ -130,7 +132,7 @@ public class bleMain : MonoBehaviour
         //Name.text = DeviceName;
         setFieldText("Initializing...");
         //setStatusText("Initializing");
-        Reset();
+        //Reset();
         BluetoothLEHardwareInterface.Initialize(true, false, () => {
 
             SetState(States.Scan, 0.1f);
@@ -233,8 +235,8 @@ public class bleMain : MonoBehaviour
 
                         BluetoothLEHardwareInterface.SubscribeCharacteristicWithDeviceAddress(_deviceAddress, ServiceUUID, Characteristic, null, (address, characteristicUUID, bytes) => {
                             string hexString = BitConverter.ToString(bytes).Replace("-", ""); // Convert bytes to hex string
-                            setFieldText("byte length: " + bytes.Length + ", Data: 0x" + hexString);
-                            box.text += "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString;
+                            //setFieldText("byte length: " + bytes.Length + ", Data: 0x" + hexString);
+                            //box.text += "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString;
 
                             // Extracting individual fields from the byte array
                             byte startByte = bytes[0];
@@ -303,22 +305,35 @@ public class bleMain : MonoBehaviour
                                     temperatureField.text = "Temperature: " + temperatureValue.ToString("F2") + " celcius";
                                     dataJson.temperatureValue = temperatureValue;
                                     break;
+                                // UWB
+                                case 0x35:
+                                    byte[] uwb = new byte[4];
+                                    Array.Copy(bytes, 3, uwb, 0, 4);
+                                    Array.Reverse(uwb);
+                                    float uwbValue = (float)(BitConverter.ToSingle(uwb, 0));
+                                    uwbField.text = "Ranging (uwb): " + uwbValue.ToString("F2") + " m";
+                                    dataJson.uwbValue = uwbValue;
+                                    break;
                                 // Pressure Mapping
                                 case 0x36:
-                                    byte[][] pressureMapping = new byte[7][];
-                                    float[] pressureMappingValue = new float[7];
-                                    for (int i = 0; i < 7; i++)
+                                    setFieldText("Pressure: byte length: " + bytes.Length + ", Data: 0x" + hexString);
+                                    box.text += "\nPressure: byte length: " + bytes.Length + ", Data: 0x" + hexString;
+                                    byte[][] pressureMapping = new byte[4][];
+                                    float[] pressureMappingValue = new float[4];
+                                    for (int i = 0; i < 4; i++)
                                     {
                                         pressureMapping[i] = new byte[4];
                                         Array.Copy(bytes, 3 + (i * 4), pressureMapping[i], 0, 4);
                                         Array.Reverse(pressureMapping[i]);
-                                        pressureMappingValue[i] = (float)(BitConverter.ToInt32(pressureMapping[i], 0) * 0.01);
+                                        pressureMappingValue[i] = (float)(BitConverter.ToUInt32(pressureMapping[i], 0) * 0.01 * 0.001);
                                     }
-                                    //// Displaying the Pressure_mapping property in the PressureData object
-                                    string pressureMappingString = string.Join(",\n", pressureMappingValue.Select(arr => string.Join(" ", arr)));
+                                    // Convert float array to string array
+                                    string[] stringValues = Array.ConvertAll(pressureMappingValue, x => x.ToString());
 
-                                    setFieldText(pressureMappingString);
-                                    box.text += "\n" + pressureMappingString;
+                                    // Join the string array with commas and new lines
+                                    string pressureMappingString = string.Join(",\n", stringValues);
+
+                                    pressureField.text = "Pressure (kPa): \n"+pressureMappingString;
                                     dataJson.pressureMappingValue = pressureMappingValue;
                                     break;
                                 // State and Speed
@@ -334,6 +349,39 @@ public class bleMain : MonoBehaviour
                                     dataJson.stateInsoleValue = stateInsoleValue;
                                     dataJson.speedValue = speedValue;
                                     break;
+                                // Step Event
+                                case 0x51:
+                                    byte[] stepLength = new byte[4];
+                                    Array.Copy(bytes, 3, stepLength, 0, 4);
+                                    Array.Reverse(stepLength);
+                                    float stepLengthValue = (float)(BitConverter.ToSingle(stepLength, 0));
+                                    byte[] strideLength = new byte[4];
+                                    Array.Copy(bytes, 7, strideLength, 0, 4);
+                                    Array.Reverse(strideLength);
+                                    float strideLengthValue = (float)(BitConverter.ToSingle(strideLength, 0));
+                                    stepEventField.text = "Step Length: " + stepLengthValue.ToString("F2") + " m"
+                                                        + "\nStride Length: " + strideLengthValue.ToString("F2") + " m";
+                                    dataJson.stepLengthValue = stepLengthValue;
+                                    dataJson.strideLengthValue = strideLengthValue;
+                                    break;
+                                // Step Width
+                                case 0x52:
+                                    byte[] stepWidth = new byte[4];
+                                    Array.Copy(bytes, 3, stepWidth, 0, 4);
+                                    Array.Reverse(stepWidth);
+                                    float stepWidthValue = (float)(BitConverter.ToSingle(stepWidth, 0));
+                                    stepWidthField.text = "Angle: " + stepWidthValue.ToString("F2") + " m";
+                                    dataJson.stepWidthValue = stepWidthValue;
+                                    break;
+                                // Step Angle
+                                case 0x53:
+                                    byte[] stepAngle = new byte[4];
+                                    Array.Copy(bytes, 3, stepAngle, 0, 4);
+                                    Array.Reverse(stepAngle);
+                                    float stepAngleValue = (float)(BitConverter.ToSingle(stepAngle, 0));
+                                    stepAngleField.text = "Angle: " + stepAngleValue.ToString("F2") + " radian";
+                                    dataJson.stepAngleValue = stepAngleValue;
+                                    break;
                                 // Foot Clearance
                                 case 0x54:
                                     byte[] footClearance = new byte[4];
@@ -345,7 +393,7 @@ public class bleMain : MonoBehaviour
                                     break;
                                 default:
                                     setFieldText("Unkown Protocol: " + (protocolID).ToString());
-                                    box.text += "\nUnkown Protocol: " +(protocolID).ToString();
+                                    box.text += "\nbyte length: " + bytes.Length + ", Data: 0x" + hexString;
                                     break;
                             }
                             // Creating a JSON object with the extracted fields
