@@ -26,6 +26,8 @@ public class UIInApp : MonoBehaviour
     public TextMeshProUGUI txtStepLength;
     public TextMeshProUGUI txtScale;
     public List<FBasic_RigidbodyMover> lsfBasic_RigidbodyMover=new List<FBasic_RigidbodyMover>();
+    public GameObject ShowData;
+    bool isShowData = false;
 
     public int indexgoChar;
     public void OnSetUp(){
@@ -44,6 +46,7 @@ public class UIInApp : MonoBehaviour
         lsgoTab[0].SetActive(true);
         lsgoTab[1].SetActive(false);
         lsgoTab[2].SetActive(false);
+        ShowData.SetActive(isShowData);
     }
 
     public void OnSliderSpeedChange()
@@ -126,6 +129,12 @@ public class UIInApp : MonoBehaviour
         lsgoBorder[index].SetActive(true);
         lsgoTab[index].SetActive(true);
 
+    }
+
+    public void toggleData()
+    {
+        isShowData = !isShowData;
+        ShowData.SetActive(isShowData);
     }
 }
 

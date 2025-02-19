@@ -12,14 +12,18 @@ using static UnityEngine.XR.Interaction.Toolkit.Inputs.XRInputTrackingAggregator
 using System.Threading;
 using UnityEngine.UIElements;
 using FIMSpace.RagdollAnimatorDemo;
+using System.IO;
 
 public class BLEManager : MonoBehaviour
 {
     private List<DeviceHandle> deviceList = new List<DeviceHandle>();
-    Queue<int> deviceQueue = new Queue<int>();
+    private Dictionary<string, Dictionary<string, Data>> jsonList = new Dictionary<string, Dictionary<string, Data>>(); // List to store JSON strings
     bool isScanning = false;
     bool isConnecting = false;
     float timeout = 0f;
+    bool isRecord = false;
+    public GameObject recordButton;
+    public List<Sprite> spriteList = new List<Sprite>();
 
     private GameObject body;
     public class DeviceHandle
@@ -147,6 +151,7 @@ public class BLEManager : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        checkRecordButton();
         BluetoothLEHardwareInterface.Initialize(true, false, () => {
             Debug.Log("Initialize");
             setFieldText("Initializing...");
@@ -256,6 +261,10 @@ public class BLEManager : MonoBehaviour
                 fb.setSpeed(averageSpeed());
                 fb.changeRotation(averageRotation());
             }
+        }
+        if (isRecord)
+        {
+            AddJSONString(JsonExtract());
         }
         increaseIndex();
     }
@@ -473,6 +482,79 @@ public class BLEManager : MonoBehaviour
             // Creating a JSON object with the extracted fields
             // string jsonData = JsonConvert.SerializeObject(deviceList[index].dataJson);
         });
+    }
+
+    Dictionary<string, Data> JsonExtract()
+    {
+        // Create a dictionary to hold the merged data
+        Dictionary<string, Data> mergedData = new Dictionary<string, Data>();
+
+        // Merge the Data objects with index-based keys
+        for (int i = 0; i < deviceList.Count; i++)
+        {
+            mergedData.Add(deviceList[i].DeviceName, deviceList[i].dataJson);
+        }
+        return mergedData;
+    }
+
+    // Add a JSON string to the list
+    void AddJSONString(Dictionary<string, Data> jsonString)
+    {
+        jsonList.Add(jsonList.Count.ToString(), jsonString);
+        if (jsonList.Count > 100000)
+        {
+            Debug.Log("Over Limit: Stop Record");
+            toggleRecord();
+        }
+    }
+
+    // Save the list of JSON strings to a JSON file
+    void SaveJSONListToFile()
+    {
+        // Serialize the list of JSON strings to a single JSON array string
+        
+        string jsonArrayString = JsonConvert.SerializeObject(jsonList, Formatting.Indented);
+
+        // Get the path to the PersistentDataPath and create a file name
+        string filePath = Path.Combine(Application.persistentDataPath, "jsondata.json");
+
+        // Write the JSON array string to the file
+        File.WriteAllText(filePath, jsonArrayString);
+
+        Debug.Log("JSON data saved to file: " + filePath);
+    }
+
+    public void toggleRecord()
+    {
+        isRecord = !isRecord;
+        checkRecordButton();
+        if (!isRecord)
+        {
+            AndroidPopupMessage.ShowPopupMessage("Stop Recording Data");
+            SaveJSONListToFile();
+            jsonList.Clear();
+        }
+        else
+        {
+            AndroidPopupMessage.ShowPopupMessage("Begin Recording Data");
+        }
+    }
+
+    void checkRecordButton()
+    {
+        if (recordButton)
+        {
+            if (isRecord)
+            {
+                recordButton.GetComponent<UnityEngine.UI.Image>().sprite = spriteList[1];
+                recordButton.GetComponentInChildren<TextMeshProUGUI>().text = "Stop";
+            }
+            else
+            {
+                recordButton.GetComponent<UnityEngine.UI.Image>().sprite = spriteList[0];
+                recordButton.GetComponentInChildren<TextMeshProUGUI>().text = "Record";
+            }
+        }
     }
 
     string FullUUID(string uuid)

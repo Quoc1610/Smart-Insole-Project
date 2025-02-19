@@ -17,7 +17,7 @@ public class bleChild : MonoBehaviour
     [SerializeField] private string ServiceUUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     [SerializeField] private string Characteristic = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
-    private string[] STATUS = {"None", "Connecting", "Connected", "Connected", "Disconnecting", "Disconnected" };
+    private string[] STATUS = {"None", "Scanning", "Connecting", "Connected", "Disconnecting", "Disconnected" };
     private string[] CHARGER_STATE = { "No Charger", "Charging", "Charge Termination" };
     private string[] INSOLE_STATE = { "STOPPING", "WALKING", "RUNNING" };
 
