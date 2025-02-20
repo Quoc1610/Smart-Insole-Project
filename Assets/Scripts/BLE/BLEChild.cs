@@ -83,7 +83,7 @@ public class bleChild : MonoBehaviour
         //if (!bleManager.isConnected(id)) return;
         data = bleManager.getJsonData(id);
         setStatusText(bleManager.getStates(id));
-        if (bleManager.isConnected(id))
+        if (bleManager.isConnected(id) || bleManager.isReplay)
         {
             toggleIcon(false);
             if (body)

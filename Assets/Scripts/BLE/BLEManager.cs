@@ -13,6 +13,7 @@ using System.Threading;
 using UnityEngine.UIElements;
 using FIMSpace.RagdollAnimatorDemo;
 using System.IO;
+using Newtonsoft.Json.Linq;
 
 public class BLEManager : MonoBehaviour
 {
@@ -21,11 +22,23 @@ public class BLEManager : MonoBehaviour
     bool isScanning = false;
     bool isConnecting = false;
     float timeout = 0f;
-    bool isRecord = false;
+    public bool isRecord = false;
+    public bool isReplay = false;
     public GameObject recordButton;
+    public GameObject replayButton;
     public List<Sprite> spriteList = new List<Sprite>();
 
     private GameObject body;
+
+    public int GetDeviceCount()
+    {
+        return deviceList.Count;
+    }
+
+    public string GetDeviceName(int id)
+    {
+        return deviceList[id].DeviceName;
+    }
     public class DeviceHandle
     {
         public string DeviceName;
@@ -51,11 +64,11 @@ public class BLEManager : MonoBehaviour
             {
                 batteryValue = 0,
                 chargerValue = 0,
-                gyroValue = null,
-                accelValue = null,
+                gyroValue = new float[3],
+                accelValue = new float[3],
                 temperatureValue = 0,
                 uwbValue = 0,
-                pressureMappingValue = null,
+                pressureMappingValue = new float[4],
                 stateInsoleValue = 0,
                 speedValue = 0,
                 stepLengthValue = 0,
@@ -73,7 +86,6 @@ public class BLEManager : MonoBehaviour
         }
 
     }
-
     public class Data
     {
         public int batteryValue;
@@ -163,6 +175,16 @@ public class BLEManager : MonoBehaviour
     }
 
     private int currentIndex = 0;
+    private int frameIndex = 0;
+
+    void increaseFrame()
+    {
+        frameIndex++;
+        if (frameIndex >= jsonList.Count)
+        {
+            toggleReplay();
+        }
+    }
 
     void increaseIndex()
     {
@@ -206,6 +228,28 @@ public class BLEManager : MonoBehaviour
         if (body == null)
         {
             body = GameObject.FindGameObjectWithTag("Model");
+        }
+        else
+        {
+            FBasic_RigidbodyMover fb = body.GetComponent<FBasic_RigidbodyMover>();
+            if (fb != null && isReady())
+            {
+                fb.setSpeed(averageSpeed());
+                fb.changeRotation(averageRotation());
+            }
+        }
+        if (isRecord)
+        {
+            AddJSONString(JsonExtract());
+        }
+        if (isReplay)
+        {
+            Dictionary<string, Data> jsonStr = jsonList[frameIndex.ToString()];
+            for (int i = 0;i<deviceList.Count;i++)
+            {
+                deviceList[i].dataJson = jsonStr[deviceList[i].DeviceName];
+            }
+            increaseFrame();
         }
         if (timeout > 0f)
         {
@@ -253,19 +297,7 @@ public class BLEManager : MonoBehaviour
                 startProccess(currentIndex);
                 break;
         }
-        if (body)
-        {
-            FBasic_RigidbodyMover fb = body.GetComponent<FBasic_RigidbodyMover>();
-            if (fb != null && isReady())
-            {
-                fb.setSpeed(averageSpeed());
-                fb.changeRotation(averageRotation());
-            }
-        }
-        if (isRecord)
-        {
-            AddJSONString(JsonExtract());
-        }
+        
         increaseIndex();
     }
 
@@ -345,6 +377,7 @@ public class BLEManager : MonoBehaviour
     void PerformSubscription(int index)
     {
         BluetoothLEHardwareInterface.SubscribeCharacteristicWithDeviceAddress(deviceList[index]._deviceAddress, deviceList[index].ServiceUUID, deviceList[index].Characteristic, null, (address, characteristicUUID, bytes) => {
+            if (isReplay) return;
             string hexString = BitConverter.ToString(bytes).Replace("-", ""); // Convert bytes to hex string
 
             // Extracting individual fields from the byte array
@@ -492,13 +525,21 @@ public class BLEManager : MonoBehaviour
         // Merge the Data objects with index-based keys
         for (int i = 0; i < deviceList.Count; i++)
         {
-            mergedData.Add(deviceList[i].DeviceName, deviceList[i].dataJson);
+            // Serialize the original dataJson object
+            string jsonCopy = JsonConvert.SerializeObject(deviceList[i].dataJson);
+
+            // Deserialize the serialized JSON to create a deep copy
+            Data newDataJson = JsonConvert.DeserializeObject<Data>(jsonCopy);
+
+            // Add the deep copy to the mergedData dictionary
+            mergedData.Add(deviceList[i].DeviceName, newDataJson);
+            //mergedData.Add(deviceList[i].DeviceName, deviceList[i].dataJson);
         }
         return mergedData;
     }
 
     // Add a JSON string to the list
-    void AddJSONString(Dictionary<string, Data> jsonString)
+    public void AddJSONString(Dictionary<string, Data> jsonString)
     {
         jsonList.Add(jsonList.Count.ToString(), jsonString);
         if (jsonList.Count > 100000)
@@ -524,6 +565,25 @@ public class BLEManager : MonoBehaviour
         Debug.Log("JSON data saved to file: " + filePath);
     }
 
+    void ReadJsonFile()
+    {
+        string filePath = Path.Combine(Application.persistentDataPath, "jsondata.json");
+        if (File.Exists(filePath))
+        {
+            string jsonContent = File.ReadAllText(filePath);
+            // Deserialize the JSON content into the desired data structure
+            jsonList = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Data>>>(jsonContent);
+            //Debug.Log("Read Count: "+ jsonList.Count.ToString());
+            //Debug.Log("Read Value: " + string.Join(", ", jsonList["0"].Keys));
+            // Now you can access the jsonData object which represents the nested dictionary structure
+        }
+        else
+        {
+            Debug.Log("File not found: " + filePath);
+        }
+    }
+
+
     public void toggleRecord()
     {
         isRecord = !isRecord;
@@ -533,10 +593,31 @@ public class BLEManager : MonoBehaviour
             AndroidPopupMessage.ShowPopupMessage("Stop Recording Data");
             SaveJSONListToFile();
             jsonList.Clear();
+            replayButton.SetActive(true);
         }
         else
         {
             AndroidPopupMessage.ShowPopupMessage("Begin Recording Data");
+            replayButton.SetActive(false);
+        }
+    }
+
+    public void toggleReplay()
+    {
+        isReplay= !isReplay;
+        checkReplayButton();
+        if (!isReplay)
+        {
+            AndroidPopupMessage.ShowPopupMessage("Stop Replay");
+            jsonList.Clear();
+            frameIndex = 0;
+            recordButton.SetActive(true);
+        }
+        else
+        {
+            AndroidPopupMessage.ShowPopupMessage("Begin Replay");
+            ReadJsonFile();
+            recordButton.SetActive(false);
         }
     }
 
@@ -553,6 +634,23 @@ public class BLEManager : MonoBehaviour
             {
                 recordButton.GetComponent<UnityEngine.UI.Image>().sprite = spriteList[0];
                 recordButton.GetComponentInChildren<TextMeshProUGUI>().text = "Record";
+            }
+        }
+    }
+
+    void checkReplayButton()
+    {
+        if (replayButton)
+        {
+            if (isReplay)
+            {
+                replayButton.GetComponent<UnityEngine.UI.Image>().sprite = spriteList[1];
+                replayButton.GetComponentInChildren<TextMeshProUGUI>().text = "||";
+            }
+            else
+            {
+                replayButton.GetComponent<UnityEngine.UI.Image>().sprite = spriteList[2];
+                replayButton.GetComponentInChildren<TextMeshProUGUI>().text = ">>";
             }
         }
     }
