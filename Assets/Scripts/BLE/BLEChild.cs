@@ -104,12 +104,12 @@ public class bleChild : MonoBehaviour
                 temperatureField.text = "Temperature: " + data.temperatureValue.ToString("F2") + " celcius";
                 uwbField.text = "Ranging (uwb): " + data.uwbValue.ToString("F2") + " m";
                 // Convert float array to string array
-                string[] stringValues = Array.ConvertAll(data.pressureMappingValue, x => x.ToString());
+                string[] stringValues = Array.ConvertAll(data.pressureMappingValue, x => x.ToString("F3"));
 
                 // Join the string array with commas and new lines
                 string pressureMappingString = string.Join(",\n", stringValues);
 
-                pressureField.text = "Pressure (kPa): \n" + pressureMappingString;
+                pressureField.text = "Pressure (Pa): \n" + pressureMappingString;
                 stateAndSpeedField.text = "State: " + INSOLE_STATE[data.stateInsoleValue]
                                                             + "\nSpeed: " + data.speedValue.ToString("F2") + " m/s";
                 stepEventField.text = "Step Length: " + data.stepLengthValue.ToString("F2") + " m"

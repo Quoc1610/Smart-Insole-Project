@@ -15,6 +15,12 @@ EditorBuildSettings:
     path: Assets/Scenes/ARNew.unity
     guid: 436b1ce3de487714d91a5861be4ed571
   - enabled: 1
+    path: Assets/Scenes/UI/Login/Login.unity
+    guid: c60e663df48225549aaacbc28a6518af
+  - enabled: 1
+    path: Assets/Scenes/UI/MainPage/MainPage.unity
+    guid: 887d7c3f7b8da8b4daaac427064f3f24
+  - enabled: 1
     path: Assets/Scenes/AR 1.unity
     guid: 01aed1118232d1f4d9fda9a2f725f3e7
   - enabled: 0

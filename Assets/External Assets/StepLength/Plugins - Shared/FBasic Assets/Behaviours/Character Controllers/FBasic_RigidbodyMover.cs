@@ -14,6 +14,7 @@ namespace FIMSpace.RagdollAnimatorDemo
         public Rigidbody Rigb;
         public Joystick movementJoystick = null;
         public UIController uiController = null;
+        public float weight = 70f;
 
         [Space(4)]
         public float MovementSpeed = 2f;
@@ -203,7 +204,7 @@ namespace FIMSpace.RagdollAnimatorDemo
 
         int convertPressure(float p)
         {
-            float result = ((p - 10000) / 10000) * 1000;
+            float result = (p / (float)((weight * 2.5 * 10) / 1000)) * 100;
             return (int)Mathf.Round(result);
         }
         public void OnReceivePressure(int side, float[] pressureMaps)

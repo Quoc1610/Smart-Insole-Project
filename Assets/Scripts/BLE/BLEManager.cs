@@ -197,19 +197,29 @@ public class BLEManager : MonoBehaviour
         float average = 0f;
         for (int i = 0;i< deviceList.Count; i++)
         {
-            average += deviceList[i].dataJson.speedValue;
+            if (deviceList[i]._connected == true) average += deviceList[i].dataJson.speedValue;
         }
+        Debug.Log("Speed: " + average.ToString());
         return average;
     }
 
     float averageRotation()
     {
         float average = 0f;
+        int count = deviceList.Count;
         for (int i = 0; i < deviceList.Count; i++)
         {
-            average += deviceList[i].dataJson.gyroValue[2] * -1;
+            if (deviceList[i]._connected == true)
+            {
+                average += deviceList[i].dataJson.gyroValue[2] * -1;
+            }
+            else
+                count--;
+                
         }
-        return average / deviceList.Count;
+        if (count == 0) return 0;
+        Debug.Log("Rotation: " + (average / count).ToString());
+        return average / count;
     }
 
     bool isReady()
@@ -219,7 +229,8 @@ public class BLEManager : MonoBehaviour
         {
             if (!deviceList[i]._connected) result = false;
         }
-        return result;
+        return true;
+        //return result;
     }
 
     // Update is called once per frame
@@ -456,7 +467,7 @@ public class BLEManager : MonoBehaviour
                         pressureMapping[i] = new byte[4];
                         Array.Copy(bytes, 3 + (i * 4), pressureMapping[i], 0, 4);
                         Array.Reverse(pressureMapping[i]);
-                        pressureMappingValue[i] = (float)(BitConverter.ToUInt32(pressureMapping[i], 0) * 0.01 * 0.001);
+                        pressureMappingValue[i] = (float)(BitConverter.ToSingle(pressureMapping[i], 0) * 0.01);
                     }
 
                     deviceList[index].dataJson.pressureMappingValue = pressureMappingValue;
