@@ -92,6 +92,7 @@ public class UIInApp : MonoBehaviour
         // TODO
         // Go back to main menu
         UIManager._instance.uiMainMenu.gameObject.SetActive(true);
+        UIManager._instance.goJoystick.gameObject.SetActive(false);
         this.gameObject.SetActive(false);
     }
     public void OnBtnPopUpClick(int index){

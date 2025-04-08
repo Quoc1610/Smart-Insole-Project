@@ -169,7 +169,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 32
   height: 64
-  tilePrefab: {fileID: 1035192279985882933, guid: bf8004d637813534ab0594d55a85d0e7, type: 3}
   goLeftFoot: {fileID: 3112016697879573921}
   goRightFoot: {fileID: 5655922128359914451}
   heightScale: 8
@@ -177,8 +176,10 @@ MonoBehaviour:
   go3DRightFoot: {fileID: 5132064691499918082}
   go3DLeftFoot: {fileID: 7140904390788307272}
   goCubeTile: {fileID: 2403747790589436844, guid: cf1bcab12fca2cd4e943ad2f48e38b12, type: 3}
+  goCubeTileR: {fileID: 2403747790589436844, guid: cf1bcab12fca2cd4e943ad2f48e38b12, type: 3}
   textDebug: {fileID: 746273034808058869}
   textFile: {fileID: 4900000, guid: 4acaf308309997c4d895eef436b60768, type: 3}
+  instancedMaterial: {fileID: 2100000, guid: ecbe8fdca205bb940ba5e302b6d36a62, type: 2}
 --- !u!1 &1484171788482945478
 GameObject:
   m_ObjectHideFlags: 0
@@ -238,7 +239,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -272,7 +273,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &718641011211249215
 RectTransform:
   m_ObjectHideFlags: 0
@@ -404,7 +405,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5104257196993369761
 Transform:
   m_ObjectHideFlags: 0
@@ -544,7 +545,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3666592355149158934
 Transform:
   m_ObjectHideFlags: 0
@@ -741,7 +742,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 1
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 77c8500637c408843807a4745bbed971, type: 2}
   m_TargetDisplay: 0
