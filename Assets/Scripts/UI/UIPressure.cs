@@ -6,6 +6,7 @@ using UnityEngine;
 using TMPro;
 using System.Linq;
 using System.Drawing;
+using UnityEngine.Rendering;
 
 public class UIPressure : MonoBehaviour
 {
@@ -63,6 +64,24 @@ public class UIPressure : MonoBehaviour
         Debug.Log("Matrix: " + matrix);
 
         resizedMatrix = ResizeMatrix(matrix, width, height);
+        //// Path to save the text file
+        //string filePath = Application.persistentDataPath + "/IntArrayData.txt";
+
+        //// Convert the 2D integer array to a formatted string
+        //string dataString = "";
+        //for (int i = 0; i < resizedMatrix.GetLength(0); i++)
+        //{
+        //    for (int j = 0; j < resizedMatrix.GetLength(1); j++)
+        //    {
+        //        dataString += resizedMatrix[i, j] + " ";
+        //    }
+        //    dataString += "\n"; // Add a new line after each row
+        //}
+
+        //// Write the string data to a text file
+        //File.WriteAllText(filePath, dataString);
+
+        //Debug.Log("Integer array saved to: " + filePath);
     }
 
 
@@ -223,14 +242,15 @@ public class UIPressure : MonoBehaviour
                     int neighborY = centerY + y;
                     if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height)
                     {
+                        int value = baseValue - (manhattanDistance * 1);
+                        if (value < 0)
+                        {
+                            value = 0;
+                        }
                         if (side == 0)
                         {
                             Tile neighborTile = gridLeftTiles[neighborX, neighborY];
-                            int value = baseValue - (manhattanDistance * 1);
-                            if (value < 0)
-                            {
-                                value = 0;
-                            }
+                            
 
                             neighborTile.realValue += value;
                             neighborTile.UpdateValue(neighborTile.realValue);
@@ -241,11 +261,6 @@ public class UIPressure : MonoBehaviour
                         else
                         {
                             Tile neighborTile = gridRightTiles[neighborX, neighborY];
-                            int value = baseValue - (manhattanDistance * 1);
-                            if (value < 0)
-                            {
-                                value = 0;
-                            }
 
                             neighborTile.realValue += value;
                             neighborTile.UpdateValue(neighborTile.realValue);
@@ -260,8 +275,36 @@ public class UIPressure : MonoBehaviour
         }
     }
 
+    public void setGridValue(int side, int[,] pressureMapping)
+    {
+        if (side == 0)
+        {
+            for (int x = 0; x < width;x++)
+            {
+                for (int y = 0;y < height;y++)
+                {
+                    gridLeftTiles[x, y].realValue = (int)pressureMapping[x, y];
+                }
+            }
+        }
+        else
+        {
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    gridRightTiles[x, y].realValue = (int)pressureMapping[x, y];
+                }
+            }
+        }
+    }
+
     private void Update()
     {
         Update3DGrid(sideFeet);
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    gridLeftTiles[10, 25].OnClicked(100, 0);
+        //}
     }
 }
