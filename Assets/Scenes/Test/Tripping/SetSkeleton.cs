@@ -49,9 +49,16 @@ public class SetSkeleton : MonoBehaviour
                      "RightUpperArm", "RightUpperLeg", "T12", "T8"};
     private int count = 0;
     public bool isPredict = false;
+    public bool isDebug = false;
     void SetFrame(string id)
     {
-        SkeletonInfo dataObject = jsonData[id];
+        SkeletonInfo dataObject;
+        if (!isPredict) dataObject = jsonData[id];
+        else
+        {
+            if (currentInfo == null) dataObject = jsonData["0"];
+            else dataObject = currentInfo;
+        }
         foreach (string segmentName in Segments)
         {
             if (dataObject.position.ContainsKey(segmentName))
@@ -60,13 +67,7 @@ public class SetSkeleton : MonoBehaviour
                 if (targetTransform != null)
                 {
                     Vector3 segmentPosition = new Vector3(dataObject.position[segmentName][0], dataObject.position[segmentName][2], dataObject.position[segmentName][1]);
-                    if (id == "0") targetTransform.localPosition = segmentPosition;
-                    else
-                    {
-                        //float t = Mathf.Clamp01(currentTime / timeLimit);
-                        //targetTransform.localPosition = Vector3.Lerp(targetTransform.localPosition, segmentPosition, t);
-                        targetTransform.localPosition = segmentPosition;
-                    }
+                    targetTransform.localPosition = segmentPosition;
                 }
                 else
                 {
@@ -85,8 +86,8 @@ public class SetSkeleton : MonoBehaviour
             // Deserialize the JSON data into a C# object
             jsonData = JsonConvert.DeserializeObject<Dictionary<string,SkeletonInfo>>(jsonContent);
             count = 0;
-
-            if (isPredict)
+            if (!isPredict) isDebug = false;
+            if (isPredict && !isDebug)
             {
                 SkeletonInfo dataObject = jsonData["0"];
                 jsonData = new Dictionary<string, SkeletonInfo>();
@@ -112,6 +113,8 @@ public class SetSkeleton : MonoBehaviour
             jsonData["0"].centerOfMass[0] = CoG.x;
             jsonData["0"].centerOfMass[1] = CoG.y;
             jsonData["0"].centerOfMass[2] = CoG.z;
+            isDebug = false;
+            isPredict = true;
         }
     }
 
@@ -177,14 +180,21 @@ public class SetSkeleton : MonoBehaviour
         public float[] centerOfMass;
     }
 
+    private SkeletonInfo currentInfo = null;
+
     public SkeletonInfo getSkeleton()
     {
-        return jsonData[(count - 2).ToString()];
+        if (isDebug) return jsonData[(count - 1).ToString()];
+        else
+        {
+            if (currentInfo == null) return jsonData[(0).ToString()];
+            return currentInfo;
+        }
     }
 
     public void updateSkeleton(SkeletonInfo info)
     {
-        jsonData[(count - 1).ToString()] = info;
+        currentInfo = info;
         predictFlag = false;
     }
 
@@ -207,14 +217,17 @@ public class SetSkeleton : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.RightArrow))
             {
                 count++;
+                Debug.Log("Pose: " + count.ToString());
+                if (isDebug) predictFlag = true;
             }
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 count--;
+                if (isDebug) predictFlag = true;
             }
             if (count >= jsonData.Count)
             {
-                if (isPredict)
+                if (isPredict && !isDebug)
                 {
                     predictFlag = true;
                 }
@@ -230,9 +243,10 @@ public class SetSkeleton : MonoBehaviour
                 if (currentTime > timeLimit)
                 {
                     count++;
+                    if (isDebug) predictFlag = true;
                     if (count >= jsonData.Count)
                     {
-                        if (isPredict)
+                        if (isPredict && !isDebug)
                         {
                             predictFlag = true;
                         }

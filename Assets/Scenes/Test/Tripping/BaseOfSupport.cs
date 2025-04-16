@@ -125,4 +125,31 @@ public class BaseOfSupport : MonoBehaviour
 
         return isInside;
     }
+
+    public void assginBool(float[] outputs)
+    {
+        //bool[] groundDetect = new bool[4];
+        //for (int i = 0;i<4;i++)
+        //{
+        //    if (outputs[i] > 0.5) groundDetect[i] = true;
+        //    else groundDetect[i] = false;
+        //}
+
+        //usePoint1 = groundDetect[2];
+        //usePoint2 = !groundDetect[3];
+        //usePoint3 = !groundDetect[1];
+        //usePoint4 = groundDetect[0];
+
+        bool[] groundDetect = new bool[2];
+        for (int i = 0; i < 2; i++)
+        {
+            if (outputs[i] > 0.5) groundDetect[i] = true;
+            else groundDetect[i] = false;
+        }
+
+        usePoint1 = groundDetect[1];
+        usePoint2 = groundDetect[1];
+        usePoint3 = groundDetect[0];
+        usePoint4 = groundDetect[0];
+    }
 }

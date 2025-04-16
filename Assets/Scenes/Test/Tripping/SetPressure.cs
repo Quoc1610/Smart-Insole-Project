@@ -7,6 +7,7 @@ public class SetPressure : MonoBehaviour
 {
     public TextAsset jsonTextAsset;
     public UIPressure uiPressue;
+    public BaseOfSupport BoS;
     private Dictionary<string, SensorInfo> jsonData;
     // Start is called before the first frame update
     [System.Serializable]
@@ -16,12 +17,15 @@ public class SetPressure : MonoBehaviour
         public Dictionary<string, float[]> gyro;
         public Dictionary<string, float[]> accel;
         public Dictionary<string, float> whs;
-        public Dictionary<string, Dictionary<string,bool>> groundDetect;
+        //public Dictionary<string, Dictionary<string,bool>> groundDetect;
+        public Dictionary<string, bool> groundDetect;
     }
     private int count = 0;
     float timeLimit = 1 / 60;
     float currentTime = 0;
     bool isStop = false;
+    public bool isPredict = false;
+    private bool isDebug = false;
 
     void Start()
     {
@@ -33,18 +37,50 @@ public class SetPressure : MonoBehaviour
             jsonData = JsonConvert.DeserializeObject<Dictionary<string, SensorInfo>>(jsonContent);
             count = 0;
         }
+        if (isPredict) isDebug = true;
+    }
+
+    float toFloat(bool value)
+    {
+        return value ? 1.0f : 0.0f;
     }
 
     void SetFrame(string id)
     {
-        SensorInfo dataObject = jsonData[id];
+        float[] outputFlat;
+        if (isPredict)
+        {
+            if (groundDetectOuput == null)
+            {
+                SensorInfo dataObject = jsonData["0"];
+                //outputFlat = new float[] { toFloat(dataObject.groundDetect["Left"]["Heel"]), toFloat(dataObject.groundDetect["Left"]["Toe"]), toFloat(dataObject.groundDetect["Right"]["Heel"]), toFloat(dataObject.groundDetect["Right"]["Toe"]) };
+                outputFlat = new float[] { toFloat(dataObject.groundDetect["Left"]), toFloat(dataObject.groundDetect["Right"]) };
+            }
+            else outputFlat = groundDetectOuput;
+        }
+        else
+        {
+            SensorInfo dataObject = jsonData[id];
+            //outputFlat = new float[] { toFloat(dataObject.groundDetect["Left"]["Heel"]), toFloat(dataObject.groundDetect["Left"]["Toe"]), toFloat(dataObject.groundDetect["Right"]["Heel"]), toFloat(dataObject.groundDetect["Right"]["Toe"]) };
+            outputFlat = new float[] { toFloat(dataObject.groundDetect["Left"]), toFloat(dataObject.groundDetect["Right"]) };
+        }
+        
+        BoS.assginBool(outputFlat);
         //uiPressue.setGridValue(0,dataObject.pressureMapping["Left"]);
         //uiPressue.setGridValue(1, dataObject.pressureMapping["Right"]);
     }
 
     public SensorInfo getSensor()
     {
-        return jsonData[(count-1).ToString()];
+        return jsonData[(count).ToString()];
+    }
+
+
+    float[] groundDetectOuput;
+    public void updateSensor(float[] output)
+    {
+        groundDetectOuput = output;
+        predictFlag = false;
     }
 
     public bool manualMode = false;
@@ -63,14 +99,20 @@ public class SetPressure : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.RightArrow))
             {
                 count++;
+                if (isDebug) predictFlag = true;
             }
             if (Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 count--;
+                if (isDebug) predictFlag = true;
             }
             if (count >= jsonData.Count)
             {
-                count--;
+                if (isPredict && !isDebug)
+                {
+                    predictFlag = true;
+                }
+                else count--;
             }
             else if (count < 0) count = 0;
         }
@@ -82,14 +124,19 @@ public class SetPressure : MonoBehaviour
                 if (currentTime > timeLimit)
                 {
                     count++;
+                    if (isDebug) predictFlag = true;
                     if (count >= jsonData.Count)
                     {
-                        count--;
+                        if (isPredict && !isDebug)
+                        {
+                            predictFlag = true;
+                        }
+                        else count--;
                     }
                     currentTime = 0;
                 }
             }
         }
-
+        //SetFrame(count.ToString());
     }
 }

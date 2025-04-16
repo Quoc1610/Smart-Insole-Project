@@ -61,7 +61,6 @@ public class UIPressure : MonoBehaviour
         OnSetUp();
 
         int[,] matrix = ReadMatrixFromText(textFile.text);
-        Debug.Log("Matrix: " + matrix);
 
         resizedMatrix = ResizeMatrix(matrix, width, height);
         //// Path to save the text file
