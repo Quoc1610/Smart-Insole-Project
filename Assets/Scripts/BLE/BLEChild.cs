@@ -65,7 +65,7 @@ public class bleChild : MonoBehaviour
         {
             bleManager = gameObject.GetComponentInParent<BLEManager>();
         }
-        id = bleManager.AddNewDevice(DeviceName, ServiceUUID, Characteristic);
+        id = bleManager.AddNewDevice(DeviceName, ServiceUUID, Characteristic, side);
         bleManager.startProccess(id);
         Name.text = DeviceName;
         toggleIcon(true);

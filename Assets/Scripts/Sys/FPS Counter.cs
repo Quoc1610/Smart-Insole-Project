@@ -16,6 +16,6 @@ public class FPSCounter : MonoBehaviour
     void Update()
     {
         float currentFPS = 1f / Time.deltaTime;
-        fpsText.text = "FPS: " + Mathf.Round(currentFPS);
+        if (fpsText) fpsText.text = "FPS: " + Mathf.Round(currentFPS);
     }
 }

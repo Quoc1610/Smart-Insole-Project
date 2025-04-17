@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using static UnityEngine.Rendering.HableCurve;
 using static UnityEngine.XR.Interaction.Toolkit.Inputs.Interactions.SectorInteraction;
@@ -15,6 +18,9 @@ public class ModelManagement : MonoBehaviour
     public SetPressure pressure;
 
     private bool isOn = false;
+    public TextMeshProUGUI timeCalculated;
+    int count = 0;
+    Double avg_time = 0;
 
     private List<float> inputStream = new List<float>();
     private string[] Segments = {"Head", "L3", "L5", "LeftFoot",
@@ -87,7 +93,6 @@ public class ModelManagement : MonoBehaviour
         int count = 0;
         foreach (var segment in Segments)
         {
-            //skeletonInfo.position.Add(segment, new float[] { output[count], output[count + 1], output[count + 2] });
             skeletonInfo.position[segment] = new float[] { output[count], output[count + 1], output[count + 2] };
             count += 3;
         }
@@ -98,56 +103,23 @@ public class ModelManagement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if (isOn && skeleton.predictFlag && pressure.predictFlag)
-        //{
-        //    createInput();
-        //    float[] modelInputs = inputStream.ToArray();
-        //    if (poseModel)
-        //    {
-        //        skeleton.updateSkeleton(returnSkeleton(poseModel.Run(modelInputs)));
-        //    }
-        //    if (groundModel)
-        //    {
-        //        pressure.updateSensor(groundModel.Run(modelInputs));
-        //    }
-
-        //}
-        if (isOn && skeleton.predictFlag && pressure.predictFlag && !isRunning)
+        if (isOn && skeleton.predictFlag && pressure.predictFlag && poseModel.modelImportComplete && groundModel.modelImportComplete)
         {
-            StartCoroutine(RunModelsCoroutine());
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            createInput();
+            float[] modelInputs = inputStream.ToArray();
+
+            skeleton.updateSkeleton(returnSkeleton(poseModel.Run(modelInputs)));
+            pressure.updateSensor(groundModel.Run(modelInputs));
+
+            stopwatch.Stop();
+            TimeSpan elapsedTime = stopwatch.Elapsed;
+            // Round the elapsed time to two decimal places
+            double roundedTime = Math.Round(elapsedTime.TotalMilliseconds, 2);
+            avg_time += roundedTime;
+            count++;
+            if (timeCalculated) timeCalculated.text = "Avg Elapsed time: " + (avg_time / count).ToString("0.00") + " ms";
         }
-    }
-
-    bool isRunning = false;
-
-    IEnumerator RunModelsCoroutine()
-    {
-        isRunning = true;
-
-        createInput();
-        float[] modelInputs = inputStream.ToArray();
-
-        float[] poseResult = null;
-        float[] groundResult = null;
-
-        // Run both models, yield in between to keep things non-blocking
-        yield return new WaitForEndOfFrame(); // optional yield
-
-        if (poseModel)
-            poseResult = poseModel.Run(modelInputs);
-
-        yield return new WaitForEndOfFrame(); // optional yield
-
-        if (groundModel)
-            groundResult = groundModel.Run(modelInputs);
-
-        // Now update the values after both are done
-        if (poseResult != null)
-            skeleton.updateSkeleton(returnSkeleton(poseResult));
-
-        if (groundResult != null)
-            pressure.updateSensor(groundResult);
-
-        isRunning = false;
     }
 }

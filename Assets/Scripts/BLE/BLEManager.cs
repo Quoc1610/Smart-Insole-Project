@@ -14,6 +14,8 @@ using UnityEngine.UIElements;
 using FIMSpace.RagdollAnimatorDemo;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using static SetPressure;
+using static UnityEngine.Rendering.HableCurve;
 
 public class BLEManager : MonoBehaviour
 {
@@ -27,6 +29,7 @@ public class BLEManager : MonoBehaviour
     public GameObject recordButton;
     public GameObject replayButton;
     public List<Sprite> spriteList = new List<Sprite>();
+    public SetPressure pressureHandle;
 
     private GameObject body;
 
@@ -120,11 +123,18 @@ public class BLEManager : MonoBehaviour
         field.text = text;
     }
 
+    Dictionary<string, int> directionIdList = new Dictionary<string, int>();
 
-    public int AddNewDevice(string _name,string _uuid, string _characteristic)
+
+    public int AddNewDevice(string _name,string _uuid, string _characteristic, int _side)
     {
         DeviceHandle item = new DeviceHandle(_name, _uuid, _characteristic);
         deviceList.Add(item);
+        if (_side == 0)
+        {
+            directionIdList["Left"] = deviceList.Count - 1;
+        }
+        else directionIdList["Right"] = deviceList.Count - 1;
         return deviceList.Count - 1;
     }
 
@@ -158,7 +168,6 @@ public class BLEManager : MonoBehaviour
     {
         return deviceList[id]._connected;
     }
-
 
     // Use this for initialization
     void Start()
@@ -229,8 +238,8 @@ public class BLEManager : MonoBehaviour
         {
             if (!deviceList[i]._connected) result = false;
         }
-        return true;
-        //return result;
+        //return true;
+        return result;
     }
 
     // Update is called once per frame
@@ -310,6 +319,29 @@ public class BLEManager : MonoBehaviour
         }
         
         increaseIndex();
+
+    }
+
+    void UpdatePressure()
+    {
+        string[] dirList = new string[] { "Left", "Right" };
+        SensorInfo sensorData = new SensorInfo();
+        sensorData.pressureMapping = new Dictionary<string, float[]>();
+        sensorData.gyro = new Dictionary<string, float[]>();
+        sensorData.accel = new Dictionary<string, float[]>();
+        sensorData.whs = new Dictionary<string, float>();
+        sensorData.groundDetect = new Dictionary<string, bool>();
+        foreach (string segmentName in dirList)
+        {
+            DeviceHandle myDevice = deviceList[directionIdList[segmentName]];
+            sensorData.pressureMapping[segmentName] = myDevice.dataJson.pressureMappingValue;
+            sensorData.gyro[segmentName] = myDevice.dataJson.gyroValue;
+            sensorData.accel[segmentName] = myDevice.dataJson.accelValue;
+            sensorData.groundDetect[segmentName] = true;
+        }
+        sensorData.whs["Weight"] = 60;
+        sensorData.whs["Height"] = 176;
+        sensorData.whs["Sex"] = 1;
     }
 
     public void FullScan()

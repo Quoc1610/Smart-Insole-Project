@@ -98,21 +98,18 @@ public class SetSkeleton : MonoBehaviour
         {
             jsonData = new Dictionary<string,SkeletonInfo>();
             jsonData["0"] = new SkeletonInfo();
+            jsonData["0"].position = new Dictionary<string, float[]>();
             foreach (string segmentName in Segments)
             {
                 Transform targetTransform = GetTransformByName(segmentName);
                 if (targetTransform != null)
                 {
                     Vector3 segmentPosition = new Vector3(targetTransform.localPosition.x, targetTransform.localPosition.z, targetTransform.localPosition.y);
-                    jsonData["0"].position[segmentName][0] = segmentPosition.x;
-                    jsonData["0"].position[segmentName][1] = segmentPosition.y;
-                    jsonData["0"].position[segmentName][2] = segmentPosition.z;
+                    jsonData["0"].position[segmentName] = new float[] { segmentPosition.x, segmentPosition.y, segmentPosition.z };
                 }
             }
             Vector3 CoG = new Vector3(centerOfGravity.localPosition.x, centerOfGravity.localPosition.z, centerOfGravity.localPosition.y);
-            jsonData["0"].centerOfMass[0] = CoG.x;
-            jsonData["0"].centerOfMass[1] = CoG.y;
-            jsonData["0"].centerOfMass[2] = CoG.z;
+            jsonData["0"].centerOfMass = new float[] {CoG.x, CoG.y, CoG.z };
             isDebug = false;
             isPredict = true;
         }

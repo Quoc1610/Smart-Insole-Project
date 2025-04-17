@@ -4,6 +4,7 @@ using TensorFlowLite;
 using System.Diagnostics;
 using System;
 using TMPro;
+using System.Collections;
 
 public class GroundDetectModel : MonoBehaviour
 {
@@ -17,9 +18,9 @@ public class GroundDetectModel : MonoBehaviour
     public bool modelImportComplete = false;
 
     private float[,] outputBuffer = new float[1, 2];
-    public TextMeshProUGUI timeCalculated;
-    int count = 0;
-    Double avg_time = 0;
+    //public TextMeshProUGUI timeCalculated;
+    //int count = 0;
+    //Double avg_time = 0;
 
     void Start()
     {
@@ -41,8 +42,8 @@ public class GroundDetectModel : MonoBehaviour
 
     public float[] Run(float[] modelInputs)
     {
-        Stopwatch stopwatch = new Stopwatch();
-        stopwatch.Start();
+        //Stopwatch stopwatch = new Stopwatch();
+        //stopwatch.Start();
 
         float[,,] modelInputsFormatted = new float[1, 1, inputSize];
         for (int i = 0; i < inputSize; i++)
@@ -53,24 +54,40 @@ public class GroundDetectModel : MonoBehaviour
         interpreter.Invoke();
         outputBuffer = new float[1, outputSize];
         interpreter.GetOutputTensorData(0, outputBuffer);
-        interpreter.Dispose();
-        BuildAndImportModel();
+        //interpreter.Dispose();
+        //BuildAndImportModel();
+        StartCoroutine(ResetModel());
         float[] outputFlat = new float[outputSize];
         for (int i = 0; i < outputSize; i++)
         {
             outputFlat[i] = outputBuffer[0, i];
         }
-        stopwatch.Stop();
-        TimeSpan elapsedTime = stopwatch.Elapsed;
-        double roundedTime = Math.Round(elapsedTime.TotalMilliseconds, 2);
-        avg_time += roundedTime;
-        count++;
-        if (timeCalculated) timeCalculated.text = "Avg Elapsed time (GroundDetect): " + (avg_time / count).ToString("0.00") + " ms";
+        //stopwatch.Stop();
+        //TimeSpan elapsedTime = stopwatch.Elapsed;
+        //double roundedTime = Math.Round(elapsedTime.TotalMilliseconds, 2);
+        //avg_time += roundedTime;
+        //count++;
+        //if (timeCalculated) timeCalculated.text = "Avg Elapsed time (GroundDetect): " + (avg_time / count).ToString("0.00") + " ms";
         return outputFlat;
     }
 
     void OnDestroy()
     {
         interpreter?.Dispose();
+    }
+
+    IEnumerator ResetModel()
+    {
+        modelImportComplete = false;
+
+        // Dispose old interpreter
+        interpreter.Dispose();
+        yield return null; // Allow Unity to process the dispose
+
+        // Simulate async model loading (you can yield between steps if needed)
+        yield return new WaitForEndOfFrame(); // or use WaitForSeconds if there's I/O
+
+        // Reload model
+        BuildAndImportModel();
     }
 }

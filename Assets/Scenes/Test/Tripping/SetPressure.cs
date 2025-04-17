@@ -2,6 +2,8 @@ using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static SetSkeleton;
+using static UnityEngine.Rendering.HableCurve;
 
 public class SetPressure : MonoBehaviour
 {
@@ -9,6 +11,7 @@ public class SetPressure : MonoBehaviour
     public UIPressure uiPressue;
     public BaseOfSupport BoS;
     private Dictionary<string, SensorInfo> jsonData;
+    private string[] Segments = new string[] { "Left", "Right" };
     // Start is called before the first frame update
     [System.Serializable]
     public class SensorInfo
@@ -25,7 +28,7 @@ public class SetPressure : MonoBehaviour
     float currentTime = 0;
     bool isStop = false;
     public bool isPredict = false;
-    private bool isDebug = false;
+    public bool isDebug = false;
 
     void Start()
     {
@@ -36,8 +39,30 @@ public class SetPressure : MonoBehaviour
             // Deserialize the JSON data into a C# object
             jsonData = JsonConvert.DeserializeObject<Dictionary<string, SensorInfo>>(jsonContent);
             count = 0;
+            if (isPredict) isDebug = true;
         }
-        if (isPredict) isDebug = true;
+        else
+        {
+            jsonData = new Dictionary<string, SensorInfo>();
+            jsonData["0"] = new SensorInfo();
+            jsonData["0"].pressureMapping = new Dictionary<string, float[]>();
+            jsonData["0"].gyro = new Dictionary<string, float[]>();
+            jsonData["0"].accel = new Dictionary<string, float[]>();
+            jsonData["0"].whs = new Dictionary<string, float>();
+            jsonData["0"].groundDetect = new Dictionary<string, bool>();
+            foreach (string segmentName in Segments)
+            {
+                jsonData["0"].pressureMapping[segmentName] = new float[] { 0, 0, 0, 0 };
+                jsonData["0"].gyro[segmentName] = new float[] { 0, 0, 0};
+                jsonData["0"].accel[segmentName] = new float[] { 0, 0, 0 };
+                jsonData["0"].groundDetect[segmentName] = true;
+            }
+            jsonData["0"].whs["Weight"] = 60;
+            jsonData["0"].whs["Height"] = 176;
+            jsonData["0"].whs["Sex"] = 1;
+            isDebug = false;
+            isPredict = true;
+        }
     }
 
     float toFloat(bool value)
@@ -69,10 +94,20 @@ public class SetPressure : MonoBehaviour
         //uiPressue.setGridValue(0,dataObject.pressureMapping["Left"]);
         //uiPressue.setGridValue(1, dataObject.pressureMapping["Right"]);
     }
-
+    SensorInfo currentInfo = null;
+    public void setSensor(SensorInfo sensor)
+    {
+        currentInfo = sensor;
+    }
     public SensorInfo getSensor()
     {
-        return jsonData[(count).ToString()];
+        //return jsonData[(count).ToString()];
+        if (isDebug) return jsonData[(count).ToString()];
+        else
+        {
+            if (currentInfo == null) return jsonData[(0).ToString()];
+            return currentInfo;
+        }
     }
 
 
