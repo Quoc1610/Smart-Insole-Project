@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    public UIMainMenu uiMainMenu;
     public UIInApp uiInApp;
     public UIPressure uiPressure;
     public GameObject goJoystick;
@@ -14,25 +13,18 @@ public class UIManager : MonoBehaviour
          if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(this);
         }
         else
         {
             GameObject.Destroy(this.gameObject);
         }
-        uiInApp.gameObject.SetActive(false);
-        
+        uiInApp.gameObject.SetActive(true);
         uiInApp.OnSetUp();
         goJoystick.SetActive(false);
         bleManager.SetActive(false);
         //uiController.gameObject.SetActive(false);
-        
     }
     private void Start() {
         uiPressure.OnSetUp();
-    }
-    public void OnLoadGameScene()
-    {
-        uiMainMenu.gameObject.SetActive(false);
     }
 }

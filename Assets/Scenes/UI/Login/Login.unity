@@ -531,7 +531,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1885382531
 RectTransform:
   m_ObjectHideFlags: 0
@@ -723,7 +723,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1037917369045157766, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 66
+      value: 59
       objectReference: {fileID: 0}
     - target: {fileID: 1037917369045157766, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -737,6 +737,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1037917369045157767, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1037917369045157767, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: e8808722f4e81aa40999c17000a1a741, type: 3}
     - target: {fileID: 1037917369045157767, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
       propertyPath: m_Color.a
       value: 0.8901961
@@ -961,25 +969,29 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1037917370542687172, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1037917370542687173, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1037917370542687173, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1037917370542687173, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 286
       objectReference: {fileID: 0}
     - target: {fileID: 1037917370542687173, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 185
       objectReference: {fileID: 0}
     - target: {fileID: 1037917370542687173, guid: 27a848139fc4c7ffdbdeebecd1bb1f08, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -349.8951
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1036,7 +1048,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.8301887, g: 0.8301887, b: 0.8301887, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

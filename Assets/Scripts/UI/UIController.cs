@@ -38,10 +38,8 @@ public class UIController : MonoBehaviour
     }
 
     // Update is called once per frame
-    // Update is called once per frame
     void Update()
     {
-        MovePlacementObject();
     }
 
     // Move the placement object based on button input

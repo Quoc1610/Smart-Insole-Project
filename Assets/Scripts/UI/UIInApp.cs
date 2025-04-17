@@ -6,6 +6,7 @@ using TMPro;
 using UnityEditor;
 using FIMSpace;
 using FIMSpace.RagdollAnimatorDemo;
+using UnityEngine.SceneManagement; 
 using JetBrains.Annotations;
 
 public class UIInApp : MonoBehaviour
@@ -91,9 +92,9 @@ public class UIInApp : MonoBehaviour
     {
         // TODO
         // Go back to main menu
-        UIManager._instance.uiMainMenu.gameObject.SetActive(true);
-        UIManager._instance.goJoystick.gameObject.SetActive(false);
         this.gameObject.SetActive(false);
+        SceneManager.LoadScene("MainPage");
+
     }
     public void OnBtnPopUpClick(int index){
         if(index==0){
@@ -108,20 +109,6 @@ public class UIInApp : MonoBehaviour
         }
     }
     public void OnBtnTabClick(int index){
-
-        //if(index==0){
-        //    lsgoBorder[0].SetActive(true);
-        //    lsgoBorder[1].SetActive(false);
-        //    lsgoTab[0].SetActive(true);
-        //    lsgoTab[1].SetActive(false);
-
-        //}
-        //else{
-        //    lsgoBorder[0].SetActive(false);
-        //    lsgoBorder[1].SetActive(true);
-        //    lsgoTab[0].SetActive(false);
-        //    lsgoTab[1].SetActive(true);
-        //}
         for (int i = 0; i < lsgoBorder.Count; i++)
         {
             lsgoBorder[i].SetActive(false);
