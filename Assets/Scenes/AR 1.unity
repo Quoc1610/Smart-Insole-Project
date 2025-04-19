@@ -169,6 +169,7 @@ GameObject:
   - component: {fileID: 54318036}
   - component: {fileID: 54318035}
   - component: {fileID: 54318039}
+  - component: {fileID: 54318040}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -286,6 +287,18 @@ MonoBehaviour:
   goJoystick: {fileID: 1629424089}
   uiController: {fileID: 1119681208}
   bleManager: {fileID: 1003180577}
+--- !u!114 &54318040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 54318034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b15a3c9c224eea46895f7087d24db37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &54404975
 GameObject:
   m_ObjectHideFlags: 0
@@ -6120,6 +6133,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: df5787ad452d0204eb203d3832897133, type: 3}
   - {fileID: 21300000, guid: 185f96c0d5f72904e8668ae2c2cc825f, type: 3}
   - {fileID: 21300000, guid: cc9a8b417b8662a448229ef963af6250, type: 3}
+  pressureHandle: {fileID: 0}
   field: {fileID: 0}
 --- !u!1 &1039266221
 GameObject:
