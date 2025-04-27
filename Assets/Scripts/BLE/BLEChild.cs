@@ -4,10 +4,7 @@ using UnityEngine.UI;
 using System.Text;
 using TMPro;
 using System;
-using Newtonsoft.Json;
-using System.Linq;
-using System.Runtime.InteropServices;
-using FIMSpace.RagdollAnimatorDemo;
+using static BLEManager;
 
 public class bleChild : MonoBehaviour
 {
@@ -41,9 +38,10 @@ public class bleChild : MonoBehaviour
     [SerializeField] private BLEManager bleManager;
     //private GameObject body;
 
-    private int id;
+    private string id;
     private BLEManager.Data data;
     public bool isDebug = true;
+    public BatteryCheck battery;
 
     void setStatusText(int _status)
     {
@@ -73,29 +71,48 @@ public class bleChild : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        //if (body == null)
-        //{
-        //    body = GameObject.FindGameObjectWithTag("Model");
-        //}
-        //if (!bleManager.isConnected(id)) return;
-        data = bleManager.getJsonData(id);
-        setStatusText(bleManager.getStates(id));
+        States currentState = bleManager.getStates(id);
+        setStatusText((int)currentState);
+        switch (currentState)
+        {
+            case States.None:
+                break;
+
+            case States.Scan:
+                bleManager.PerformBluetoothScan();
+                break;
+
+            case States.Connect:
+                bleManager.PerformConnection(id);
+                break;
+            case States.Subscribe:
+                bleManager.PerformSubscription(id);
+                break;
+
+            case States.Unsubscribe:
+                bleManager.PerformUnsubscription(id);
+                break;
+
+            case States.Disconnect:
+                bleManager.PerformDisconnection(id);
+                break;
+        }
+        ShowData();
+    }
+
+    // Update is called once per frame
+    void ShowData()
+    {
+
         if (bleManager.isConnected(id) || bleManager.isReplay)
         {
             toggleIcon(false);
-            //if (body)
-            //{
-            //    FBasic_RigidbodyMover fb = body.GetComponent<FBasic_RigidbodyMover>();
-            //    if (fb != null)
-            //    {
-            //        fb.OnReceivePressure(side, data.pressureMappingValue);
-            //    }
-            //}
 
+            data = bleManager.getJsonData(id);
             bleManager.OnReceivePressure(side, data.pressureMappingValue);
+            battery.setBattery(data.batteryValue);
             
             if (isDebug)
             {

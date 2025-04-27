@@ -1,43 +1,34 @@
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.UI;
-using System.Text;
 using TMPro;
 using System;
 using Newtonsoft.Json;
-using System.Linq;
-using System.Runtime.InteropServices;
-using static UnityEngine.Rendering.DebugUI;
-using static UnityEngine.XR.Interaction.Toolkit.Inputs.XRInputTrackingAggregator;
-using System.Threading;
-using UnityEngine.UIElements;
 using FIMSpace.RagdollAnimatorDemo;
 using System.IO;
-using Newtonsoft.Json.Linq;
 using static SetPressure;
-using static UnityEngine.Rendering.HableCurve;
-using Unity.VisualScripting;
-using UnityEngine.Android;
 
 public class BLEManager : MonoBehaviour
 {
-    private List<DeviceHandle> deviceList = new List<DeviceHandle>();
+    private Dictionary<string, DeviceHandle> deviceList = new Dictionary<string, DeviceHandle>();
     private Dictionary<string, Dictionary<string, Data>> jsonList = new Dictionary<string, Dictionary<string, Data>>(); // List to store JSON strings
     bool isScanning = false;
     bool isConnecting = false;
-    float timeout = 0f;
+    string connectingSide;
+
+    string[] DIRECTIONS = { "Left", "Right" };
+
     public bool isRecord = false;
     public bool isReplay = false;
+
     public GameObject recordButton;
     public GameObject replayButton;
+
     public List<Sprite> spriteList = new List<Sprite>();
+
     public SetPressure pressureHandle;
     public TrippingRiskCalculator trippingCalculator;
     public GameObject skeletonDisplay;
     public bool isSkeleton = false;
-    //public UnityEngine.UI.Slider skeletonSlider;
-    public TestRotation LeftObject;
-    public TestRotation RightObject;
 
     private GameObject body;
     private float medium = 2250;
@@ -49,9 +40,9 @@ public class BLEManager : MonoBehaviour
         return deviceList.Count;
     }
 
-    public string GetDeviceName(int id)
+    public string GetDeviceName(string side)
     {
-        return deviceList[id].DeviceName;
+        return deviceList[side].DeviceName;
     }
     public class DeviceHandle
     {
@@ -62,9 +53,8 @@ public class BLEManager : MonoBehaviour
         public Data dataJson;
 
         public States _state = States.None;
-        public bool _workingFoundDevice = true;
         public bool _connected = false;
-        public bool _foundID = false;
+        public bool _isFound = false;
         public string _deviceAddress = "";
 
 
@@ -93,10 +83,9 @@ public class BLEManager : MonoBehaviour
 
         public void Reset()
         {
-            _workingFoundDevice = false;    // used to guard against trying to connect to a second device while still connecting to the first
             _connected = false;
+            _isFound = false;
             _state = States.None;
-            _foundID = false;
         }
 
     }
@@ -134,50 +123,41 @@ public class BLEManager : MonoBehaviour
         field.text = text;
     }
 
-    Dictionary<string, int> directionIdList = new Dictionary<string, int>();
 
-
-    public int AddNewDevice(string _name,string _uuid, string _characteristic, int _side)
+    public string AddNewDevice(string _name, string _uuid, string _characteristic, int _side)
     {
         DeviceHandle item = new DeviceHandle(_name, _uuid, _characteristic);
-        deviceList.Add(item);
         if (_side == 0)
         {
-            directionIdList["Left"] = deviceList.Count - 1;
+            deviceList["Left"] = item;
+            return "Left";
         }
-        else if (_side == 1) directionIdList["Right"] = deviceList.Count - 1;
-        return deviceList.Count - 1;
+        else
+        {
+            deviceList["Right"] = item;
+            return "Right";
+        }
     }
 
-    void SetState(int id, States state)
+    public void startProccess(string side)
     {
-        deviceList[id]._state = state;
+        deviceList[side].Reset();
+        deviceList[side]._state = States.Scan;
     }
 
-    public void startProccess(int id)
+    public Data getJsonData(string side)
     {
-        deviceList[id].Reset();
-        SetState(id, States.Scan);
+        return deviceList[side].dataJson;
     }
 
-    public void stopProccess(int id)
+    public States getStates(string side)
     {
-        SetState(id,States.Unsubscribe);
+        return deviceList[side]._state;
     }
 
-    public Data getJsonData(int id)
+    public bool isConnected(string side)
     {
-        return deviceList[id].dataJson;
-    }
-
-    public int getStates(int id)
-    {
-        return (int)deviceList[id]._state;
-    }
-
-    public bool isConnected(int id)
-    {
-        return deviceList[id]._connected;
+        return deviceList[side]._connected;
     }
 
     // Use this for initialization
@@ -220,33 +200,26 @@ public class BLEManager : MonoBehaviour
         }
     }
 
-    void increaseIndex()
-    {
-        currentIndex++;
-        if (currentIndex >= deviceList.Count) currentIndex = 0;
-    }
-
     float averageSpeed()
     {
         float average = 0f;
-        for (int i = 0;i< deviceList.Count; i++)
+        foreach (string side in DIRECTIONS)
         {
-            if (deviceList[i]._connected == true) average += deviceList[i].dataJson.speedValue;
+            if (deviceList[side]._connected == true) average += deviceList[side].dataJson.speedValue;
         }
-        Debug.Log("Speed: " + average.ToString());
         return average;
     }
 
     float sumPressure()
     {
         float sum = 0f;
-        for (int i = 0; i < deviceList.Count; i++)
+        foreach (string side in DIRECTIONS)
         {
-            if (deviceList[i]._connected == true)
+            if (deviceList[side]._connected == true)
             {
-                for (int j = 0; i < deviceList[i].dataJson.pressureMappingValue.Length; j++)
+                for (int i = 0; i < deviceList[side].dataJson.pressureMappingValue.Length; i++)
                 {
-                    sum+= deviceList[i].dataJson.pressureMappingValue[j] * 0.01f;
+                    sum += deviceList[side].dataJson.pressureMappingValue[i] * 0.01f;
                 }
             }
         }
@@ -257,49 +230,28 @@ public class BLEManager : MonoBehaviour
     {
         float average = 0f;
         int count = deviceList.Count;
-        for (int i = 0; i < deviceList.Count; i++)
+        foreach (string side in DIRECTIONS)
         {
-            if (deviceList[i]._connected == true)
+            if (deviceList[side]._connected == true)
             {
-                average += deviceList[i].dataJson.gyroValue[2] * -1;
+                average += deviceList[side].dataJson.gyroValue[2] * -1;
             }
             else
                 count--;
-                
+
         }
         if (count == 0) return 0;
-        Debug.Log("Rotation: " + (average / count).ToString());
         return average / count;
     }
 
-    void UpdateRotation()
-    {
-        DeviceHandle myDeviceLeft = deviceList[directionIdList["Left"]];
-        if (myDeviceLeft == null) return;
-        Vector3 gyroLeft = new Vector3(-1 * myDeviceLeft.dataJson.gyroValue[0], -1 * myDeviceLeft.dataJson.gyroValue[2], -1* myDeviceLeft.dataJson.gyroValue[1]);
-        Vector3 accelLeft = new Vector3(myDeviceLeft.dataJson.accelValue[0], myDeviceLeft.dataJson.accelValue[1], myDeviceLeft.dataJson.accelValue[2]);
-        LeftObject.changeRotation(gyroLeft.x, gyroLeft.y, gyroLeft.z);
-        LeftObject.ShowForce(accelLeft);
-
-        DeviceHandle myDeviceRight = deviceList[directionIdList["Right"]];
-        if (myDeviceRight == null) return;
-        Vector3 gyroRight = new Vector3(-1 * myDeviceRight.dataJson.gyroValue[0], -1 * myDeviceRight.dataJson.gyroValue[2], -1 * myDeviceRight.dataJson.gyroValue[1]);
-        Vector3 accelRight = new Vector3(myDeviceRight.dataJson.accelValue[0], myDeviceRight.dataJson.accelValue[1], myDeviceRight.dataJson.accelValue[2]);
-        RightObject.changeRotation(gyroRight.x, gyroRight.y, gyroRight.z);
-        RightObject.ShowForce(accelRight);
-
-
-    }
 
     bool isReady()
     {
-        bool result = true;
-        for (int i = 0;i < deviceList.Count;i++)
+        foreach (string side in DIRECTIONS)
         {
-            if (!deviceList[i]._connected) result = false;
+            if (!deviceList[side]._connected) return false;
         }
-        //return true;
-        return result;
+        return true;
     }
 
     int convertPressure(float p)
@@ -331,7 +283,7 @@ public class BLEManager : MonoBehaviour
     public void toggleModel()
     {
         isSkeleton = !isSkeleton;
-        Debug.Log("Skeleton " +isSkeleton.ToString());
+        Debug.Log("Skeleton " + isSkeleton.ToString());
     }
 
     // Update is called once per frame
@@ -368,63 +320,15 @@ public class BLEManager : MonoBehaviour
         if (isReplay)
         {
             Dictionary<string, Data> jsonStr = jsonList[frameIndex.ToString()];
-            for (int i = 0;i<deviceList.Count;i++)
+            foreach (string side in DIRECTIONS)
             {
-                deviceList[i].dataJson = jsonStr[deviceList[i].DeviceName];
+                deviceList[side].dataJson = jsonStr[deviceList[side].DeviceName];
             }
             increaseFrame();
         }
         UpdatePressure();
-        //UpdateRotation();
         speedText.text = averageSpeed().ToString("F2") + " m/s";
-        if (timeout > 0f)
-        {
-            timeout -= Time.deltaTime;
-            return;
-        }
-        timeout = 1f;
-        switch (deviceList[currentIndex]._state)
-        {
-            case States.None:
-                break;
-
-            case States.Scan:
-                setFieldText("Scanning for " + deviceList[currentIndex].DeviceName);
-                if (!isScanning) PerformBluetoothScan(currentIndex);
-                break;
-                
-            case States.Connect:
-                setFieldText("Connecting to "+ deviceList[currentIndex].DeviceName);
-                // set these flags
-                deviceList[currentIndex]._foundID = false;
-                if (!isConnecting) PerformConnection(currentIndex);
-                break;
-            case States.Subscribe:
-                setFieldText("Subscribing to " + deviceList[currentIndex].DeviceName);
-                PerformSubscription(currentIndex);
-                // set to the none state and the user can start sending and receiving data
-                SetState(currentIndex, States.None);
-                // setFieldText("Waiting...");
-                break;
-
-            case States.Unsubscribe:
-                BluetoothLEHardwareInterface.UnSubscribeCharacteristic(deviceList[currentIndex]._deviceAddress, deviceList[currentIndex].ServiceUUID, deviceList[currentIndex].Characteristic, null);
-                SetState(currentIndex,States.Disconnect);
-                break;
-
-            case States.Disconnect:
-                if (deviceList[currentIndex]._connected)
-                {
-                    BluetoothLEHardwareInterface.DisconnectPeripheral(deviceList[currentIndex]._deviceAddress, (address) => {
-                    }); 
-                }
-                deviceList[currentIndex]._connected = false;
-                // SetState(currentIndex, States.None);
-                startProccess(currentIndex);
-                break;
-        }
-        
-        increaseIndex();
+        CheckScanning();
     }
     float[] offsetGyro(float[] data)
     {
@@ -434,22 +338,24 @@ public class BLEManager : MonoBehaviour
         result[2] = data[1] * 16.4f;
         return result;
     }
+
+    Dictionary<string, int[]> pressureOrder = new Dictionary<string, int[]>
+    {
+        { "Left",  new int[] { 1, 0, 2, 3 } },
+        { "Right", new int[] { 2, 3, 1, 0 } }
+    };
+
     void UpdatePressure()
     {
-        string[] dirList = new string[] { "Left", "Right" };
-        Dictionary<string, int[]> pressureOrder = new Dictionary<string, int[]>();
-        pressureOrder["Left"] = new int[] { 1, 0, 2, 3};
-        pressureOrder["Right"] = new int[] { 2, 3, 1, 0 };
-
         SensorInfo sensorData = new SensorInfo();
         sensorData.pressureMapping = new Dictionary<string, float[]>();
         sensorData.gyro = new Dictionary<string, float[]>();
         sensorData.accel = new Dictionary<string, float[]>();
         sensorData.whs = new Dictionary<string, float>();
         sensorData.groundDetect = new Dictionary<string, bool>();
-        foreach (string segmentName in dirList)
+        foreach (string segmentName in DIRECTIONS)
         {
-            DeviceHandle myDevice = deviceList[directionIdList[segmentName]];
+            DeviceHandle myDevice = deviceList[segmentName];
             float[] mapping = new float[myDevice.dataJson.pressureMappingValue.Length]; 
 
             for (int i = 0;i <mapping.Length;i++)
@@ -480,83 +386,90 @@ public class BLEManager : MonoBehaviour
         Debug.Log("Run Predict Tripping Risk");
     }
 
-    public void FullScan()
+    void CheckScanning()
     {
-        for (int i = 0; i < deviceList.Count;i++)
+        foreach (string side in DIRECTIONS)
         {
-            if (!deviceList[i]._connected) startProccess(i);
+            if (!deviceList[side]._isFound) return;
         }
-    }    
+        isScanning = false;
+        BluetoothLEHardwareInterface.StopScan();
+    }
 
 
-    public void PerformBluetoothScan(int index)
+    public void PerformBluetoothScan()
     {
+        if (isScanning) return;
         isScanning = true;
         BluetoothLEHardwareInterface.ScanForPeripheralsWithServices(null, (address, name) => {
             // Check if the scanned device matches the device in the list
             // Inside the scan callback function
-            if (name.Contains(deviceList[index].DeviceName))
+            foreach (string side in DIRECTIONS)
             {
-                deviceList[index]._workingFoundDevice = true;
+                if (!deviceList[side]._isFound)
+                {
+                    if (name.Contains(deviceList[side].DeviceName))
+                    {
+                        deviceList[side]._isFound = true;
 
-                // Update device address and set state to connect
-                deviceList[index]._deviceAddress = address;
-                SetState(index,States.Connect);
-                Debug.Log("Found " + deviceList[index].DeviceName);
-                setFieldText("Found " + deviceList[index].DeviceName);
-
-                isScanning = false;
-                BluetoothLEHardwareInterface.StopScan();
+                        // Update device address and set state to connect
+                        deviceList[side]._deviceAddress = address;
+                        deviceList[side]._state = States.Connect;
+                        Debug.Log("Found " + deviceList[side].DeviceName);
+                        setFieldText("Found " + deviceList[side].DeviceName);
+                    }
+                }
             }
-
+            
         }, null, false, false);
     }
-    void PerformConnection(int index)
+
+    string SearchForAddress(string address)
     {
-        isConnecting = true;
-        Debug.Log("Connected test 1: " + index.ToString());
-        // note that the first parameter is the address, not the name. I have not fixed this because
-        // of backwards compatiblity.
-        // also note that I am note using the first 2 callbacks. If you are not looking for specific characteristics you can use one of
-        // the first 2, but keep in mind that the device will enumerate everything and so you will want to have a timeout
-        // large enough that it will be finished enumerating before you try to subscribe or do any other operations.
-        BluetoothLEHardwareInterface.ConnectToPeripheral(deviceList[index]._deviceAddress, null, null, (address, serviceUUID, characteristicUUID) => {
-            Debug.Log("Connected test 2: " + index.ToString());
-            if (IsEqual(serviceUUID, deviceList[index].ServiceUUID))
+        foreach (string side in DIRECTIONS)
+        {
+            if (address == deviceList[side]._deviceAddress)
             {
-                // if we have found the characteristic that we are waiting for
-                // set the state. make sure there is enough timeout that if the
-                // device is still enumerating other characteristics it finishes
-                // before we try to subscribe
-                if (IsEqual(characteristicUUID, deviceList[index].Characteristic))
+                return side;
+            }
+        }
+        return null;
+    }
+    public void PerformConnection(string side)
+    {
+        if (isConnecting) return;
+        isConnecting = true;
+        connectingSide = side;
+        BluetoothLEHardwareInterface.ConnectToPeripheral(deviceList[side]._deviceAddress, null, null, (address, serviceUUID, characteristicUUID) => {
+            if (IsEqual(serviceUUID, deviceList[side].ServiceUUID))
+            {
+                if (IsEqual(characteristicUUID, deviceList[side].Characteristic))
                 {
-                    deviceList[index]._connected = true;
-                    deviceList[index]._foundID = true;
-                    setFieldText("Connected to " + deviceList[index].DeviceName);
-                    Debug.Log("Connected to: " + deviceList[index].DeviceName);
+                    deviceList[connectingSide]._connected = true;
+                    setFieldText("Connected to " + deviceList[connectingSide].DeviceName);
+                    Debug.Log("Connected to: " + deviceList[connectingSide].DeviceName);
+                    
+                    deviceList[connectingSide]._state = States.Subscribe;
                     isConnecting = false;
-                    SetState(index,States.Subscribe);
                 }
             }
         }, (disconnectedAddress) => {
-            for (int i = 0;i<deviceList.Count;i++)
-            {
-                if (disconnectedAddress == deviceList[i]._deviceAddress)
-                {
-                    deviceList[i]._connected = false;
-                    setFieldText("Disconnected: " + deviceList[i].DeviceName);
-                    SetState(i, States.Disconnect);
-                    break;
-                }
-            }
+            string Side = SearchForAddress(disconnectedAddress);
+            if (Side == null) return;
+            deviceList[Side]._connected = false;
+            deviceList[Side]._state = States.Disconnect;
+            setFieldText("Disconnected: " + deviceList[Side].DeviceName);
             BluetoothLEHardwareInterface.Log("Device disconnected: " + disconnectedAddress);
         });
     }
 
-    void PerformSubscription(int index)
+    public void PerformSubscription(string side)
     {
-        BluetoothLEHardwareInterface.SubscribeCharacteristicWithDeviceAddress(deviceList[index]._deviceAddress, deviceList[index].ServiceUUID, deviceList[index].Characteristic, null, (address, characteristicUUID, bytes) => {
+        BluetoothLEHardwareInterface.SubscribeCharacteristicWithDeviceAddress(deviceList[side]._deviceAddress, deviceList[side].ServiceUUID, deviceList[side].Characteristic, null, (address, characteristicUUID, bytes) => {
             if (isReplay) return;
+            string index = SearchForAddress(address);
+            if (index == null) return;
+
             string hexString = BitConverter.ToString(bytes).Replace("-", ""); // Convert bytes to hex string
 
             // Extracting individual fields from the byte array
@@ -691,9 +604,26 @@ public class BLEManager : MonoBehaviour
                 default:
                     break;
             }
-            // Creating a JSON object with the extracted fields
-            // string jsonData = JsonConvert.SerializeObject(deviceList[index].dataJson);
         });
+        deviceList[side]._state = States.None;
+    }
+
+    public void PerformUnsubscription(string side)
+    {
+        BluetoothLEHardwareInterface.UnSubscribeCharacteristic(deviceList[side]._deviceAddress, deviceList[side].ServiceUUID, deviceList[side].Characteristic, null);
+        deviceList[side]._state = States.Disconnect;
+    }
+
+    public void PerformDisconnection(string side)
+    {
+        if (deviceList[side]._connected)
+        {
+            BluetoothLEHardwareInterface.DisconnectPeripheral(deviceList[side]._deviceAddress, (address) => {
+            });
+        }
+        deviceList[side]._connected = false;
+        deviceList[side]._isFound = false;
+        startProccess(side);
     }
 
     Dictionary<string, Data> JsonExtract()
@@ -702,16 +632,16 @@ public class BLEManager : MonoBehaviour
         Dictionary<string, Data> mergedData = new Dictionary<string, Data>();
 
         // Merge the Data objects with index-based keys
-        for (int i = 0; i < deviceList.Count; i++)
+        foreach (string side in DIRECTIONS)
         {
             // Serialize the original dataJson object
-            string jsonCopy = JsonConvert.SerializeObject(deviceList[i].dataJson);
+            string jsonCopy = JsonConvert.SerializeObject(deviceList[side].dataJson);
 
             // Deserialize the serialized JSON to create a deep copy
             Data newDataJson = JsonConvert.DeserializeObject<Data>(jsonCopy);
 
             // Add the deep copy to the mergedData dictionary
-            mergedData.Add(deviceList[i].DeviceName, newDataJson);
+            mergedData.Add(deviceList[side].DeviceName, newDataJson);
             //mergedData.Add(deviceList[i].DeviceName, deviceList[i].dataJson);
         }
         return mergedData;

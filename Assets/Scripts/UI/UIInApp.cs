@@ -45,12 +45,7 @@ public class UIInApp : MonoBehaviour
         sliderStepLength.minValue=0;
         sliderMoveSpeed.maxValue=5;
         sliderMoveSpeed.minValue=2;
-        lsgoBorder[0].SetActive(true);
-        lsgoBorder[1].SetActive(false);
-        lsgoBorder[2].SetActive(false);
-        lsgoTab[0].SetActive(true);
-        lsgoTab[1].SetActive(false);
-        lsgoTab[2].SetActive(false);
+        OnBtnTabClick(2);
         ShowData.SetActive(isShowData);
     }
 
@@ -134,10 +129,10 @@ public class UIInApp : MonoBehaviour
         //}
         for (int i = 0; i < lsgoBorder.Count; i++)
         {
-            lsgoBorder[i].SetActive(false);
+            lsgoBorder[i].SetActive(true);
             lsgoTab[i].SetActive(false);
         }
-        lsgoBorder[index].SetActive(true);
+        lsgoBorder[index].SetActive(false);
         lsgoTab[index].SetActive(true);
 
     }
