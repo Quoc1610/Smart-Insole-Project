@@ -110,6 +110,11 @@ public class SetPressure : MonoBehaviour
         }
     }
 
+    public SensorInfo getDebugSensor()
+    {
+        return jsonData[(count).ToString()];
+    }
+
 
     float[] groundDetectOuput;
     public void updateSensor(float[] output)

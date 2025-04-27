@@ -23,6 +23,8 @@ public class MainPageController : MonoBehaviour
     public GameObject slider;
     public Button planePutDown;
 
+    public UserSetting userSetting;
+
     void Start()
     {
         userInstance = GameObject.FindGameObjectWithTag("UserInstance").GetComponent<UserInstance>();
@@ -31,6 +33,7 @@ public class MainPageController : MonoBehaviour
         account.onClick.AddListener(OnAccountClick);
         quit.onClick.AddListener(OnLogoutClick);
         planePutDown.onClick.AddListener(OnGroundBasePlaneClick);
+        setting.onClick.AddListener(OnSettingClick);
     }
 
     // Update is called once per frame
@@ -39,8 +42,14 @@ public class MainPageController : MonoBehaviour
         printDashBoard();
     }
 
+    void OnSettingClick()
+    {
+        userSetting.gameObject.SetActive(true);
+    }    
+
     void OnAccountClick()
     {
+        Debug.Log("Clicked");
         isSlider = !isSlider;
         slider.SetActive(isSlider);
     }
@@ -64,7 +73,7 @@ public class MainPageController : MonoBehaviour
             steps.text = userInstance.entity.totalSteps.ToString();
             distance.text = userInstance.entity.totalDistance.ToString();
             speed.text = userInstance.entity.averageSpeed.ToString();
-            prevents.text = userInstance.entity.totalPrevent.ToString();
+            prevents.text = userInstance.entity.averageStepLength.ToString();
         }
     }
 }

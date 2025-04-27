@@ -2,7 +2,7 @@
 	"ServerUrl": "https:\/\/unisave.cloud\/",
 	"GameToken": "Si00SXCgYGmTnGCRBJQ4xjoJ",
 	"AutomaticBackendUploading": true,
-	"BackendHash": "2ceddf1736d1b957883b939214a2524a",
+	"BackendHash": "79fefb417c57cba9a4a72758bfc63191",
 	"PreferencesEnabledBackendFolders": [
 		"Unisave.EmailAuthentication"
 	]

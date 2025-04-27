@@ -16,6 +16,8 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using static SetPressure;
 using static UnityEngine.Rendering.HableCurve;
+using Unity.VisualScripting;
+using UnityEngine.Android;
 
 public class BLEManager : MonoBehaviour
 {
@@ -30,9 +32,18 @@ public class BLEManager : MonoBehaviour
     public GameObject replayButton;
     public List<Sprite> spriteList = new List<Sprite>();
     public SetPressure pressureHandle;
+    public TrippingRiskCalculator trippingCalculator;
+    public GameObject skeletonDisplay;
+    public bool isSkeleton = false;
+    //public UnityEngine.UI.Slider skeletonSlider;
+    public TestRotation LeftObject;
+    public TestRotation RightObject;
 
     private GameObject body;
+    private float medium = 2250;
+    private UserInstance userInstance;
 
+    public TextMeshProUGUI speedText;
     public int GetDeviceCount()
     {
         return deviceList.Count;
@@ -134,7 +145,7 @@ public class BLEManager : MonoBehaviour
         {
             directionIdList["Left"] = deviceList.Count - 1;
         }
-        else directionIdList["Right"] = deviceList.Count - 1;
+        else if (_side == 1) directionIdList["Right"] = deviceList.Count - 1;
         return deviceList.Count - 1;
     }
 
@@ -170,8 +181,22 @@ public class BLEManager : MonoBehaviour
     }
 
     // Use this for initialization
+
+    private void OnDestroy()
+    {
+#if UNITY_ANDROID || UNITY_IOS
+        BluetoothLEHardwareInterface.DisconnectAll();
+
+        // Delay deinitialization slightly to allow disconnects to finish
+        BluetoothLEHardwareInterface.DeInitialize(() =>
+        {
+            Debug.Log("Bluetooth LE DeInitialized.");
+        });
+#endif
+    }
     void Start()
     {
+        userInstance = GameObject.FindGameObjectWithTag("UserInstance").GetComponent<UserInstance>();
         checkRecordButton();
         BluetoothLEHardwareInterface.Initialize(true, false, () => {
             Debug.Log("Initialize");
@@ -212,6 +237,22 @@ public class BLEManager : MonoBehaviour
         return average;
     }
 
+    float sumPressure()
+    {
+        float sum = 0f;
+        for (int i = 0; i < deviceList.Count; i++)
+        {
+            if (deviceList[i]._connected == true)
+            {
+                for (int j = 0; i < deviceList[i].dataJson.pressureMappingValue.Length; j++)
+                {
+                    sum+= deviceList[i].dataJson.pressureMappingValue[j] * 0.01f;
+                }
+            }
+        }
+        return sum;
+    }
+
     float averageRotation()
     {
         float average = 0f;
@@ -231,6 +272,25 @@ public class BLEManager : MonoBehaviour
         return average / count;
     }
 
+    void UpdateRotation()
+    {
+        DeviceHandle myDeviceLeft = deviceList[directionIdList["Left"]];
+        if (myDeviceLeft == null) return;
+        Vector3 gyroLeft = new Vector3(-1 * myDeviceLeft.dataJson.gyroValue[0], -1 * myDeviceLeft.dataJson.gyroValue[2], -1* myDeviceLeft.dataJson.gyroValue[1]);
+        Vector3 accelLeft = new Vector3(myDeviceLeft.dataJson.accelValue[0], myDeviceLeft.dataJson.accelValue[1], myDeviceLeft.dataJson.accelValue[2]);
+        LeftObject.changeRotation(gyroLeft.x, gyroLeft.y, gyroLeft.z);
+        LeftObject.ShowForce(accelLeft);
+
+        DeviceHandle myDeviceRight = deviceList[directionIdList["Right"]];
+        if (myDeviceRight == null) return;
+        Vector3 gyroRight = new Vector3(-1 * myDeviceRight.dataJson.gyroValue[0], -1 * myDeviceRight.dataJson.gyroValue[2], -1 * myDeviceRight.dataJson.gyroValue[1]);
+        Vector3 accelRight = new Vector3(myDeviceRight.dataJson.accelValue[0], myDeviceRight.dataJson.accelValue[1], myDeviceRight.dataJson.accelValue[2]);
+        RightObject.changeRotation(gyroRight.x, gyroRight.y, gyroRight.z);
+        RightObject.ShowForce(accelRight);
+
+
+    }
+
     bool isReady()
     {
         bool result = true;
@@ -242,6 +302,38 @@ public class BLEManager : MonoBehaviour
         return result;
     }
 
+    int convertPressure(float p)
+    {
+        float weight = userInstance.entity.weight;
+        float result = (p / (float)((weight * 2.5 * 10) / 0.015)) * 100;
+        return (int)Mathf.Round(result);
+    }
+
+    public void OnReceivePressure(int side, float[] pressureMaps)
+    {
+        UIManager._instance.uiPressure.ResetHeightGrid(side);
+        if (side == 0)
+        {
+            UIManager._instance.uiPressure.gridLeftTiles[15, 8].OnClicked(convertPressure(pressureMaps[3]), 0);
+            UIManager._instance.uiPressure.gridLeftTiles[21, 43].OnClicked(convertPressure(pressureMaps[0]), 0);
+            UIManager._instance.uiPressure.gridLeftTiles[9, 42].OnClicked(convertPressure(pressureMaps[2]), 0);
+            UIManager._instance.uiPressure.gridLeftTiles[25, 57].OnClicked(convertPressure(pressureMaps[1]), 0);
+        }
+        else
+        {
+            UIManager._instance.uiPressure.gridRightTiles[16, 8].OnClicked(convertPressure(pressureMaps[0]), 1);
+            UIManager._instance.uiPressure.gridRightTiles[22, 41].OnClicked(convertPressure(pressureMaps[1]), 1);
+            UIManager._instance.uiPressure.gridRightTiles[11, 40].OnClicked(convertPressure(pressureMaps[3]), 1);
+            UIManager._instance.uiPressure.gridRightTiles[6, 55].OnClicked(convertPressure(pressureMaps[2]), 1);
+        }
+    }
+
+    public void toggleModel()
+    {
+        isSkeleton = !isSkeleton;
+        Debug.Log("Skeleton " +isSkeleton.ToString());
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -249,14 +341,25 @@ public class BLEManager : MonoBehaviour
         {
             body = GameObject.FindGameObjectWithTag("Model");
         }
-        else
+        if (body != null && !isSkeleton)
         {
+            body.SetActive(true);
+            skeletonDisplay.transform.parent = gameObject.transform;
+            skeletonDisplay.transform.position = Vector3.zero;
             FBasic_RigidbodyMover fb = body.GetComponent<FBasic_RigidbodyMover>();
             if (fb != null && isReady())
             {
                 fb.setSpeed(averageSpeed());
                 fb.changeRotation(averageRotation());
             }
+        }
+        else if (isSkeleton)
+        {
+            body.SetActive(false);
+            skeletonDisplay.transform.parent = body.transform.parent;
+            skeletonDisplay.transform.localPosition = body.transform.localPosition;
+            skeletonDisplay.transform.localScale = body.transform.localScale;
+            skeletonDisplay.transform.localRotation = body.transform.localRotation;
         }
         if (isRecord)
         {
@@ -271,6 +374,9 @@ public class BLEManager : MonoBehaviour
             }
             increaseFrame();
         }
+        UpdatePressure();
+        //UpdateRotation();
+        speedText.text = averageSpeed().ToString("F2") + " m/s";
         if (timeout > 0f)
         {
             timeout -= Time.deltaTime;
@@ -319,12 +425,22 @@ public class BLEManager : MonoBehaviour
         }
         
         increaseIndex();
-
     }
-
+    float[] offsetGyro(float[] data)
+    {
+        float[] result = new float[3];
+        result[0] = data[0] * 16.4f;
+        result[1] = data[2] * 16.4f;
+        result[2] = data[1] * 16.4f;
+        return result;
+    }
     void UpdatePressure()
     {
         string[] dirList = new string[] { "Left", "Right" };
+        Dictionary<string, int[]> pressureOrder = new Dictionary<string, int[]>();
+        pressureOrder["Left"] = new int[] { 1, 0, 2, 3};
+        pressureOrder["Right"] = new int[] { 2, 3, 1, 0 };
+
         SensorInfo sensorData = new SensorInfo();
         sensorData.pressureMapping = new Dictionary<string, float[]>();
         sensorData.gyro = new Dictionary<string, float[]>();
@@ -334,14 +450,34 @@ public class BLEManager : MonoBehaviour
         foreach (string segmentName in dirList)
         {
             DeviceHandle myDevice = deviceList[directionIdList[segmentName]];
-            sensorData.pressureMapping[segmentName] = myDevice.dataJson.pressureMappingValue;
+            float[] mapping = new float[myDevice.dataJson.pressureMappingValue.Length]; 
+
+            for (int i = 0;i <mapping.Length;i++)
+            {
+                mapping[i] = myDevice.dataJson.pressureMappingValue[pressureOrder[segmentName][i]];
+                mapping[i] *= 0.01f; // Convert pa to mbar: 1 mbar = 100 pa
+            }
+            sensorData.pressureMapping[segmentName] = mapping;
+
+            //sensorData.gyro[segmentName] = offsetGyro(myDevice.dataJson.gyroValue);
             sensorData.gyro[segmentName] = myDevice.dataJson.gyroValue;
             sensorData.accel[segmentName] = myDevice.dataJson.accelValue;
             sensorData.groundDetect[segmentName] = true;
         }
-        sensorData.whs["Weight"] = 60;
-        sensorData.whs["Height"] = 176;
-        sensorData.whs["Sex"] = 1;
+        sensorData.whs["Weight"] = userInstance.entity.weight;
+        sensorData.whs["Height"] = userInstance.entity.height;
+        sensorData.whs["Sex"] = userInstance.entity.sex; 
+
+        pressureHandle.setSensor(sensorData);
+    }
+
+    public void PredictTrippingRisk(bool isBalanced)
+    {
+        trippingCalculator.isBalanced = isBalanced;
+        trippingCalculator.weight = userInstance.entity.weight;
+        trippingCalculator.speed = averageSpeed();
+        trippingCalculator.footPressure = sumPressure();
+        Debug.Log("Run Predict Tripping Risk");
     }
 
     public void FullScan()
@@ -407,9 +543,9 @@ public class BLEManager : MonoBehaviour
             {
                 if (disconnectedAddress == deviceList[i]._deviceAddress)
                 {
-                    deviceList[index]._connected = false;
+                    deviceList[i]._connected = false;
                     setFieldText("Disconnected: " + deviceList[i].DeviceName);
-                    SetState(index, States.Disconnect);
+                    SetState(i, States.Disconnect);
                     break;
                 }
             }
@@ -499,7 +635,7 @@ public class BLEManager : MonoBehaviour
                         pressureMapping[i] = new byte[4];
                         Array.Copy(bytes, 3 + (i * 4), pressureMapping[i], 0, 4);
                         Array.Reverse(pressureMapping[i]);
-                        pressureMappingValue[i] = (float)(BitConverter.ToSingle(pressureMapping[i], 0) * 0.01);
+                        pressureMappingValue[i] = ((float)(BitConverter.ToSingle(pressureMapping[i], 0) * 0.01) * medium) / 0.0006f;
                     }
 
                     deviceList[index].dataJson.pressureMappingValue = pressureMappingValue;

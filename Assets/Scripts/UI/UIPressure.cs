@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ConstrainedExecution;
@@ -180,10 +180,10 @@ public class UIPressure : MonoBehaviour
                 Tile tileL = gridLeftTiles[x, y];
                 if (tileL.realValue == 0 && resizedMatrix[height - 1 - y, x] == 1)
                 {
-                    tileL.realValue = 40;
+                    tileL.realValue = -100;
                 }
-                float heightScaleL = Mathf.Clamp(tileL.realValue / 100f * 10f, 0.1f, 100f);
-
+                //float heightScaleL = Mathf.Clamp(tileL.realValue / 100f * 10f, 0.1f, 100f);
+                float heightScaleL = 1f;
 
                 Vector3 localPositionL = new Vector3(x, 0, y);
                 Vector3 positionL = go3DLeftFoot.transform.position + go3DLeftFoot.transform.TransformVector(localPositionL);
@@ -197,9 +197,10 @@ public class UIPressure : MonoBehaviour
                 Tile tileR = gridRightTiles[x, y];
                 if (tileR.realValue == 0 && resizedMatrix[height - 1 - y, width - 1 - x] == 1)
                 {
-                    tileR.realValue = 40;
+                    tileR.realValue = -100;
                 }
-                float heightScaleR = Mathf.Clamp(tileR.realValue / 100f * 10f, 0.1f, 100f);
+                //float heightScaleR = Mathf.Clamp(tileR.realValue / 100f * 10f, 0.1f, 100f);
+                float heightScaleR = 1f;
 
                 Vector3 localPositionR = new Vector3(x, 0, y);
                 Vector3 positionR = go3DRightFoot.transform.position + go3DRightFoot.transform.TransformVector(localPositionR);
@@ -222,53 +223,113 @@ public class UIPressure : MonoBehaviour
         Graphics.DrawMeshInstanced(goCubeTile.GetComponent<MeshFilter>().sharedMesh, 0, instancedMaterial, matricesR, width * height, propsR);
     }
 
+    // //Mahathan Distance
+    //public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue, int side)
+    //{
+    //    sideFeet = side;
+    //    for (int x = -radius; x <= radius; x++)
+    //    {
+    //        for (int y = -radius; y <= radius; y++)
+    //        {
+    //            int manhattanDistance = Mathf.Abs(x) + Mathf.Abs(y);
+    //            if (manhattanDistance == 0)
+    //            {
+    //                continue;
+    //            }
+    //            else if (manhattanDistance <= radius)
+    //            {
+    //                int neighborX = centerX + x;
+    //                int neighborY = centerY + y;
+    //                if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height)
+    //                {
+    //                    int value = baseValue - (manhattanDistance * 1);
+    //                    if (value < 0)
+    //                    {
+    //                        value = 0;
+    //                    }
+    //                    if (side == 0)
+    //                    {
+    //                        Tile neighborTile = gridLeftTiles[neighborX, neighborY];
 
+
+    //                        neighborTile.realValue += value;
+    //                        neighborTile.UpdateValue(neighborTile.realValue);
+    //                        neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, neighborX]; 
+    //                        //neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+    //                        neighborTile.UpdateValue(neighborTile.realValue);
+    //                    }
+    //                    else
+    //                    {
+    //                        Tile neighborTile = gridRightTiles[neighborX, neighborY];
+
+    //                        neighborTile.realValue += value;
+    //                        neighborTile.UpdateValue(neighborTile.realValue);
+    //                        neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, width - 1 - neighborX];
+    //                       // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
+    //                        neighborTile.UpdateValue(neighborTile.realValue);
+
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
+
+    // Gaussian Kernel
     public void ActOnNeighbors(int centerX, int centerY, int radius, int baseValue, int side)
-    {
+    { 
         sideFeet = side;
+
+        // Choose sigma relative to radius (tweak for sharper/flatter falloff)
+        float sigma = radius * 0.5f;
+        float twoSigmaSq = 2f * sigma * sigma;
+
         for (int x = -radius; x <= radius; x++)
         {
             for (int y = -radius; y <= radius; y++)
             {
-                int manhattanDistance = Mathf.Abs(x) + Mathf.Abs(y);
-                if (manhattanDistance == 0)
-                {
+                // Euclidean squared distance from center
+                float distSq = x * x + y * y;
+
+                // Skip center, skip outside circle
+                if (distSq == 0f || distSq > radius * radius)
                     continue;
-                }
-                else if (manhattanDistance <= radius)
+
+                int neighborX = centerX + x;
+                int neighborY = centerY + y;
+
+                if (neighborX < 0 || neighborX >= width || neighborY < 0 || neighborY >= height)
+                    continue;
+
+                // Compute Gaussian weight: w = exp(-distSq / (2σ²))
+                float w = Mathf.Exp(-distSq / twoSigmaSq);
+
+                // Scale by baseValue
+                int value = Mathf.RoundToInt(baseValue * w);
+                if (value <= 0)
+                    continue;  // nothing to add
+
+                if (side == 0)
                 {
-                    int neighborX = centerX + x;
-                    int neighborY = centerY + y;
-                    if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height)
-                    {
-                        int value = baseValue - (manhattanDistance * 1);
-                        if (value < 0)
-                        {
-                            value = 0;
-                        }
-                        if (side == 0)
-                        {
-                            Tile neighborTile = gridLeftTiles[neighborX, neighborY];
-                            
+                    Tile neighborTile = gridLeftTiles[neighborX, neighborY];
 
-                            neighborTile.realValue += value;
-                            neighborTile.UpdateValue(neighborTile.realValue);
-                            neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, neighborX]; 
-                            //neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
-                            neighborTile.UpdateValue(neighborTile.realValue);
-                        }
-                        else
-                        {
-                            Tile neighborTile = gridRightTiles[neighborX, neighborY];
+                    neighborTile.realValue += value;
+                    neighborTile.UpdateValue(neighborTile.realValue);
 
-                            neighborTile.realValue += value;
-                            neighborTile.UpdateValue(neighborTile.realValue);
-                            neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, width - 1 - neighborX];
-                           // neighborTile.image.color = neighborTile.GetColorBasedOnValue(neighborTile.realValue);
-                            neighborTile.UpdateValue(neighborTile.realValue);
+                    // apply mask
+                    neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, neighborX];
+                    neighborTile.UpdateValue(neighborTile.realValue);
+                }
+                else
+                {
+                    Tile neighborTile = gridRightTiles[neighborX, neighborY];
 
-                        }
-                    }
+                    neighborTile.realValue += value;
+                    neighborTile.UpdateValue(neighborTile.realValue);
+
+                    // apply mask (mirrored)
+                    neighborTile.realValue *= resizedMatrix[height - 1 - neighborY, width - 1 - neighborX];
+                    neighborTile.UpdateValue(neighborTile.realValue);
                 }
             }
         }

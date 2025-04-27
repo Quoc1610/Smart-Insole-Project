@@ -41,4 +41,11 @@ public class UserInstance : MonoBehaviour
             (UserDataFacet f) => f.DownloadLoggedInPlayer()
         );
     }
+
+    public async void OnSaveSetting(float weight, float height, float bmi, float sex)
+    {
+        entity = await this.CallFacet(
+            (UserDataFacet f) => f.SaveUserSetting(weight, height, bmi, sex)
+        );
+    }
 }

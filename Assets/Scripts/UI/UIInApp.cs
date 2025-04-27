@@ -7,6 +7,8 @@ using UnityEditor;
 using FIMSpace;
 using FIMSpace.RagdollAnimatorDemo;
 using JetBrains.Annotations;
+using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 public class UIInApp : MonoBehaviour
 {
@@ -22,14 +24,17 @@ public class UIInApp : MonoBehaviour
     public TextMeshProUGUI txtSpeed;
     public TextMeshProUGUI txtMoveSpeed;    
     public List<GameObject> lsGOChar=new List<GameObject>();
-    public Vector3 v3CharScale;
     public TextMeshProUGUI txtStepLength;
+    public Vector3 v3CharScale;
     public TextMeshProUGUI txtScale;
     public List<FBasic_RigidbodyMover> lsfBasic_RigidbodyMover=new List<FBasic_RigidbodyMover>();
     public GameObject ShowData;
     bool isShowData = false;
 
     public int indexgoChar;
+
+    private int scale = 3;
+    private float[] SCALE = new float[] {0.25f, 0.5f, 0.75f, 1f, 1.5f, 2f, 3f };
     public void OnSetUp(){
         btnPopUp[0].gameObject.SetActive(true);
         btnPopUp[1].gameObject.SetActive(false);
@@ -67,33 +72,38 @@ public class UIInApp : MonoBehaviour
         txtMoveSpeed.text="Move Speed: "+sliderMoveSpeed.value.ToString("F2");
         lsfBasic_RigidbodyMover[indexgoChar].MovementSpeed=sliderMoveSpeed.value;
     }
-    public void OnSetUpScale(){
-        v3CharScale=lsGOChar[indexgoChar].transform.localScale;
+
+    public void OnSetUpScale()
+    {
+        v3CharScale = lsGOChar[indexgoChar].transform.localScale;
     }
+
     public void OnbtnScaleClick(int index)
     {
-       
-        if(index==0){
-            if(lsGOChar[indexgoChar].transform.localScale.x/v3CharScale.x==1f){
-                return;
-            }
-            lsGOChar[indexgoChar].transform.localScale-=v3CharScale;
+        if (index == 0)
+        {
+            scale--;
+            if (scale < 0) scale = 0;
         }
-        else{
-            lsGOChar[indexgoChar].transform.localScale+=v3CharScale;
+        else
+        {
+            scale++;
+            if (scale >= SCALE.Length) scale = SCALE.Length - 1;
         }
+        lsGOChar[indexgoChar].transform.localScale = v3CharScale * SCALE[scale];
         UpdateScaleText();
     }
     public void UpdateScaleText(){
-        txtScale.text=(lsGOChar[indexgoChar].transform.localScale.x/v3CharScale.x).ToString("F2");
+        txtScale.text= (SCALE[scale]).ToString("F2");
     }
     public void OnBtnHomeClick()
     {
         // TODO
         // Go back to main menu
-        UIManager._instance.uiMainMenu.gameObject.SetActive(true);
-        UIManager._instance.goJoystick.gameObject.SetActive(false);
-        this.gameObject.SetActive(false);
+        //UIManager._instance.uiMainMenu.gameObject.SetActive(true);
+        //UIManager._instance.goJoystick.gameObject.SetActive(false);
+        //this.gameObject.SetActive(false);
+        SceneManager.LoadScene("MainPage");
     }
     public void OnBtnPopUpClick(int index){
         if(index==0){

@@ -19,13 +19,16 @@ public class UserDataFacet : Facet
     /// Increments the star count for the player
     /// and returns the updated player entity
     /// </summary>
-    //public UserEntity CollectStar()
-    //{
-    //    var player = Auth.GetPlayer<UserEntity>();
+    public UserEntity SaveUserSetting(float weight, float height, float bmi, float sex)
+    {
+        var player = Auth.GetPlayer<UserEntity>();
 
-    //    player.collectedStars += 1;
-    //    player.Save();
+        player.weight = weight;
+        player.height = height;
+        player.bmi = bmi;
+        player.sex = sex;
+        player.Save();
 
-    //    return player;
-    //}
+        return player;
+    }
 }

@@ -36,13 +36,24 @@ public class TrippingRiskCalculator : MonoBehaviour
         if (risk)
         {
             string text = "Low";
+            Color color = Color.white;
             if (result < .33f)
+            {
                 text = "Low";
+                color = Color.yellow;
+            }
             else if (result < .66f)
+            {
                 text = "Medium";
+                color = new Color32(255, 165, 0, 255); // Orange
+            }
             else
+            {
                 text = "High";
+                color = Color.red;
+            }
             risk.text = "Risk: " + text;
+            risk.color = color;
         }
     }
 

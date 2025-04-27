@@ -5,11 +5,10 @@ using UnityEngine;
 
 public class FPSCounter : MonoBehaviour
 {
-    private TextMeshProUGUI fpsText;
+    public TextMeshProUGUI fpsText;
 
     private void Start()
     {
-        fpsText = GetComponent<TextMeshProUGUI>();
         Application.targetFrameRate = 60;
     }
 

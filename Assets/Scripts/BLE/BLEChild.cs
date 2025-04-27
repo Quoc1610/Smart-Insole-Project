@@ -39,7 +39,7 @@ public class bleChild : MonoBehaviour
     [SerializeField] private TextMeshProUGUI footClearanceField;
 
     [SerializeField] private BLEManager bleManager;
-    private GameObject body;
+    //private GameObject body;
 
     private int id;
     private BLEManager.Data data;
@@ -76,24 +76,26 @@ public class bleChild : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (body == null)
-        {
-            body = GameObject.FindGameObjectWithTag("Model");
-        }
+        //if (body == null)
+        //{
+        //    body = GameObject.FindGameObjectWithTag("Model");
+        //}
         //if (!bleManager.isConnected(id)) return;
         data = bleManager.getJsonData(id);
         setStatusText(bleManager.getStates(id));
         if (bleManager.isConnected(id) || bleManager.isReplay)
         {
             toggleIcon(false);
-            if (body)
-            {
-                FBasic_RigidbodyMover fb = body.GetComponent<FBasic_RigidbodyMover>();
-                if (fb != null)
-                {
-                    fb.OnReceivePressure(side, data.pressureMappingValue);
-                }
-            }
+            //if (body)
+            //{
+            //    FBasic_RigidbodyMover fb = body.GetComponent<FBasic_RigidbodyMover>();
+            //    if (fb != null)
+            //    {
+            //        fb.OnReceivePressure(side, data.pressureMappingValue);
+            //    }
+            //}
+
+            bleManager.OnReceivePressure(side, data.pressureMappingValue);
             
             if (isDebug)
             {
@@ -104,7 +106,7 @@ public class bleChild : MonoBehaviour
                 temperatureField.text = "Temperature: " + data.temperatureValue.ToString("F2") + " celcius";
                 uwbField.text = "Ranging (uwb): " + data.uwbValue.ToString("F2") + " m";
                 // Convert float array to string array
-                string[] stringValues = Array.ConvertAll(data.pressureMappingValue, x => x.ToString("F3"));
+                string[] stringValues = Array.ConvertAll(data.pressureMappingValue, x => x.ToString("F2"));
 
                 // Join the string array with commas and new lines
                 string pressureMappingString = string.Join(",\n", stringValues);

@@ -214,7 +214,6 @@ public class SetSkeleton : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.RightArrow))
             {
                 count++;
-                Debug.Log("Pose: " + count.ToString());
                 if (isDebug) predictFlag = true;
             }
             if (Input.GetKeyDown(KeyCode.LeftArrow))

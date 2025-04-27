@@ -28,5 +28,12 @@ public class UserEntity : Entity
     public int totalSteps = 0;
     public float totalDistance = 0;
     public float averageSpeed = 0;
-    public int totalPrevent = 0;
+    public float averageStepLength = 0;
+
+    public float weight = 60;
+    public float height = 165;
+    public float sex = 0;
+    public float bmi = 0;
+
+    public bool isInitailize = false;
 }

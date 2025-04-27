@@ -48,6 +48,10 @@ public class Tile
     public Color GetColorBasedOnValue(int Invalue)
     {
         float value = Invalue / 100f;
+        if (value == -1)
+        {
+            return Color.grey;
+        }
         if (value <= 0 || value > 1)
         {
             
