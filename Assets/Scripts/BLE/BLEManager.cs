@@ -10,7 +10,7 @@ using static SetPressure;
 public class BLEManager : MonoBehaviour
 {
     private Dictionary<string, DeviceHandle> deviceList = new Dictionary<string, DeviceHandle>();
-    private Dictionary<string, Dictionary<string, Data>> jsonList = new Dictionary<string, Dictionary<string, Data>>(); // List to store JSON strings
+    private Dictionary<string, Dictionary<string, RecordedData>> jsonList = new Dictionary<string, Dictionary<string, RecordedData>>(); // List to store JSON strings
     bool isScanning = false;
     bool isConnecting = false;
     string connectingSide;
@@ -19,6 +19,7 @@ public class BLEManager : MonoBehaviour
 
     public bool isRecord = false;
     public bool isReplay = false;
+    public TMP_Dropdown fileList;
 
     public GameObject recordButton;
     public GameObject replayButton;
@@ -26,6 +27,7 @@ public class BLEManager : MonoBehaviour
     public List<Sprite> spriteList = new List<Sprite>();
 
     public SetPressure pressureHandle;
+    public SetSkeleton skeletonHandle;
     public TrippingRiskCalculator trippingCalculator;
     public GameObject skeletonDisplay;
     public bool isSkeleton = false;
@@ -105,6 +107,21 @@ public class BLEManager : MonoBehaviour
         public float stepWidthValue;
         public float stepAngleValue;
         public float footClearanceValue;
+    }
+
+    public class SavedJsonData
+    {
+        public SetSkeleton.SkeletonInfo originalSkeleton;
+        public float originalRotation;
+        public Dictionary<string, Dictionary<string, RecordedData>> history;
+    }
+
+    public class RecordedData
+    {
+        public float[] pressureMappingValue;
+        public float[] gyroValue;
+        public float[] accelValue;
+        public float speedValue;
     }
 
     public enum States
@@ -286,6 +303,9 @@ public class BLEManager : MonoBehaviour
         Debug.Log("Skeleton " + isSkeleton.ToString());
     }
 
+    private SetSkeleton.SkeletonInfo originalSkeleton;
+    private float originalRotation;
+
     // Update is called once per frame
     void Update()
     {
@@ -317,12 +337,15 @@ public class BLEManager : MonoBehaviour
         {
             AddJSONString(JsonExtract());
         }
-        if (isReplay)
+        if (isReplay && isReadytoReplay)
         {
-            Dictionary<string, Data> jsonStr = jsonList[frameIndex.ToString()];
+            Dictionary<string, RecordedData> jsonStr = jsonList[frameIndex.ToString()];
             foreach (string side in DIRECTIONS)
             {
-                deviceList[side].dataJson = jsonStr[deviceList[side].DeviceName];
+                deviceList[side].dataJson.pressureMappingValue = jsonStr[side].pressureMappingValue;
+                deviceList[side].dataJson.gyroValue = jsonStr[side].gyroValue;
+                deviceList[side].dataJson.accelValue = jsonStr[side].accelValue;
+                deviceList[side].dataJson.speedValue = jsonStr[side].speedValue;
             }
             increaseFrame();
         }
@@ -383,7 +406,6 @@ public class BLEManager : MonoBehaviour
         trippingCalculator.weight = userInstance.entity.weight;
         trippingCalculator.speed = averageSpeed();
         trippingCalculator.footPressure = sumPressure();
-        Debug.Log("Run Predict Tripping Risk");
     }
 
     void CheckScanning()
@@ -626,32 +648,41 @@ public class BLEManager : MonoBehaviour
         startProccess(side);
     }
 
-    Dictionary<string, Data> JsonExtract()
+    float[] copyFloatList(float[] origin)
+    {
+        float[] result = new float[origin.Length];
+        for (int i = 0; i < origin.Length; i++)
+        {
+            result[i] = origin[i];
+        }
+        return result;
+    }
+
+    Dictionary<string, RecordedData> JsonExtract()
     {
         // Create a dictionary to hold the merged data
-        Dictionary<string, Data> mergedData = new Dictionary<string, Data>();
+        Dictionary<string, RecordedData> mergedData = new Dictionary<string, RecordedData>();
 
         // Merge the Data objects with index-based keys
         foreach (string side in DIRECTIONS)
         {
-            // Serialize the original dataJson object
-            string jsonCopy = JsonConvert.SerializeObject(deviceList[side].dataJson);
-
-            // Deserialize the serialized JSON to create a deep copy
-            Data newDataJson = JsonConvert.DeserializeObject<Data>(jsonCopy);
+            RecordedData newData = new RecordedData();
+            newData.pressureMappingValue = copyFloatList(deviceList[side].dataJson.pressureMappingValue);
+            newData.accelValue = copyFloatList(deviceList[side].dataJson.accelValue);
+            newData.gyroValue = copyFloatList(deviceList[side].dataJson.gyroValue);
+            newData.speedValue = deviceList[side].dataJson.speedValue;
 
             // Add the deep copy to the mergedData dictionary
-            mergedData.Add(deviceList[side].DeviceName, newDataJson);
-            //mergedData.Add(deviceList[i].DeviceName, deviceList[i].dataJson);
+            mergedData.Add(side, newData);
         }
         return mergedData;
     }
 
     // Add a JSON string to the list
-    public void AddJSONString(Dictionary<string, Data> jsonString)
+    public void AddJSONString(Dictionary<string, RecordedData> jsonString)
     {
         jsonList.Add(jsonList.Count.ToString(), jsonString);
-        if (jsonList.Count > 100000)
+        if (jsonList.Count > 36000)
         {
             Debug.Log("Over Limit: Stop Record");
             toggleRecord();
@@ -662,8 +693,12 @@ public class BLEManager : MonoBehaviour
     void SaveJSONListToFile()
     {
         // Serialize the list of JSON strings to a single JSON array string
+        SavedJsonData savedData = new SavedJsonData();
+        savedData.originalSkeleton = originalSkeleton;
+        savedData.originalRotation = originalRotation;
+        savedData.history = jsonList;
         
-        string jsonArrayString = JsonConvert.SerializeObject(jsonList, Formatting.Indented);
+        string jsonArrayString = JsonConvert.SerializeObject(savedData, Formatting.Indented);
 
         // Get the path to the PersistentDataPath and create a file name
         string filePath = Path.Combine(Application.persistentDataPath, "jsondata.json");
@@ -674,22 +709,59 @@ public class BLEManager : MonoBehaviour
         Debug.Log("JSON data saved to file: " + filePath);
     }
 
+    string checkFile()
+    {
+        string filePath;
+        string jsonContent = null;
+        switch (fileList.value)
+        {
+            case 0:
+                filePath = Path.Combine(Application.persistentDataPath, "jsondata.json");
+                if (File.Exists(filePath)) jsonContent = File.ReadAllText(filePath);
+                else
+                {
+                    Debug.Log("File not found: " + filePath);
+                }
+                break;
+            case 1:
+                TextAsset jsonFile = Resources.Load<TextAsset>("example");
+                if (jsonFile != null)
+                {
+                    jsonContent = jsonFile.text;
+                }
+                else
+                {
+                    Debug.LogError("Failed to load JSON file");
+                }
+                break;
+            default:
+                filePath = Path.Combine(Application.persistentDataPath, fileList.options[fileList.value].text);
+                if (File.Exists(filePath)) jsonContent = File.ReadAllText(filePath);
+                else
+                {
+                    Debug.Log("File not found: " + filePath);
+                }
+                break;
+        }
+        return jsonContent;
+    }
+
+    private bool isReadytoReplay = false;
+
     void ReadJsonFile()
     {
-        string filePath = Path.Combine(Application.persistentDataPath, "jsondata.json");
-        if (File.Exists(filePath))
+        string jsonContent = checkFile();
+        
+        if (jsonContent!= null)
         {
-            string jsonContent = File.ReadAllText(filePath);
-            // Deserialize the JSON content into the desired data structure
-            jsonList = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Data>>>(jsonContent);
-            //Debug.Log("Read Count: "+ jsonList.Count.ToString());
-            //Debug.Log("Read Value: " + string.Join(", ", jsonList["0"].Keys));
+            SavedJsonData jsonData = JsonConvert.DeserializeObject<SavedJsonData>(jsonContent);
+            skeletonHandle.updateSkeletonNow(jsonData.originalSkeleton);
+            if (body) body.gameObject.transform.rotation = Quaternion.Euler(0,jsonData.originalRotation,0);
+            jsonList = jsonData.history;
+
             // Now you can access the jsonData object which represents the nested dictionary structure
         }
-        else
-        {
-            Debug.Log("File not found: " + filePath);
-        }
+        isReadytoReplay = true;
     }
 
 
@@ -708,6 +780,9 @@ public class BLEManager : MonoBehaviour
         {
             AndroidPopupMessage.ShowPopupMessage("Begin Recording Data");
             replayButton.SetActive(false);
+            originalSkeleton = skeletonHandle.GetCurrentSkeleton();
+            if (body) originalRotation = body.gameObject.transform.rotation.eulerAngles.y;
+            else originalRotation = 0f;
         }
     }
 
@@ -724,6 +799,7 @@ public class BLEManager : MonoBehaviour
         }
         else
         {
+            isReadytoReplay = false;
             AndroidPopupMessage.ShowPopupMessage("Begin Replay");
             ReadJsonFile();
             recordButton.SetActive(false);

@@ -97,22 +97,28 @@ public class SetSkeleton : MonoBehaviour
         else
         {
             jsonData = new Dictionary<string,SkeletonInfo>();
-            jsonData["0"] = new SkeletonInfo();
-            jsonData["0"].position = new Dictionary<string, float[]>();
-            foreach (string segmentName in Segments)
-            {
-                Transform targetTransform = GetTransformByName(segmentName);
-                if (targetTransform != null)
-                {
-                    Vector3 segmentPosition = new Vector3(targetTransform.localPosition.x, targetTransform.localPosition.z, targetTransform.localPosition.y);
-                    jsonData["0"].position[segmentName] = new float[] { segmentPosition.x, segmentPosition.y, segmentPosition.z };
-                }
-            }
-            Vector3 CoG = new Vector3(centerOfGravity.localPosition.x, centerOfGravity.localPosition.z, centerOfGravity.localPosition.y);
-            jsonData["0"].centerOfMass = new float[] {CoG.x, CoG.y, CoG.z };
+            jsonData["0"] = GetCurrentSkeleton();
             isDebug = false;
             isPredict = true;
         }
+    }
+
+    public SkeletonInfo GetCurrentSkeleton()
+    {
+        SkeletonInfo myData = new SkeletonInfo();
+        myData.position = new Dictionary<string, float[]>();
+        foreach (string segmentName in Segments)
+        {
+            Transform targetTransform = GetTransformByName(segmentName);
+            if (targetTransform != null)
+            {
+                Vector3 segmentPosition = new Vector3(targetTransform.localPosition.x, targetTransform.localPosition.z, targetTransform.localPosition.y);
+                myData.position[segmentName] = new float[] { segmentPosition.x, segmentPosition.y, segmentPosition.z };
+            }
+        }
+        Vector3 CoG = new Vector3(centerOfGravity.localPosition.x, centerOfGravity.localPosition.z, centerOfGravity.localPosition.y);
+        myData.centerOfMass = new float[] { CoG.x, CoG.y, CoG.z };
+        return myData;
     }
 
     Transform GetTransformByName(string name)
@@ -178,7 +184,7 @@ public class SetSkeleton : MonoBehaviour
     }
 
     private SkeletonInfo currentInfo = null;
-
+    private bool stopPrecict = false;
     public SkeletonInfo getSkeleton()
     {
         if (isDebug) return jsonData[(count - 1).ToString()];
@@ -189,8 +195,20 @@ public class SetSkeleton : MonoBehaviour
         }
     }
 
+    public void updateSkeletonNow(SkeletonInfo info)
+    {
+        stopPrecict = true;
+        currentInfo = info;
+        SetFrame("0");
+    }
+
     public void updateSkeleton(SkeletonInfo info)
     {
+        if (stopPrecict)
+        {
+            stopPrecict = false;
+            return;
+        }
         currentInfo = info;
         predictFlag = false;
     }
