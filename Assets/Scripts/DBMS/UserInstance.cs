@@ -48,4 +48,11 @@ public class UserInstance : MonoBehaviour
             (UserDataFacet f) => f.SaveUserSetting(weight, height, bmi, sex)
         );
     }
+
+    public async void OnSaveDashboard(int total_steps, float total_distance, float avg_speed, float avg_step_length)
+    {
+        entity = await this.CallFacet(
+            (UserDataFacet f) => f.SaveUserDashBoard(total_steps, total_distance, avg_speed, avg_step_length)
+        );
+    }
 }

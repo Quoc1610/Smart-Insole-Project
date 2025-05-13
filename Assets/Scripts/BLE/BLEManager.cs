@@ -36,6 +36,12 @@ public class BLEManager : MonoBehaviour
     private float medium = 2250;
     private UserInstance userInstance;
 
+    public float aStep = 20;
+    public float aLift = 18;
+
+    public TextMeshProUGUI distanceText;
+    public TextMeshProUGUI stepsText;
+
     public TextMeshProUGUI speedText;
     public int GetDeviceCount()
     {
@@ -222,7 +228,8 @@ public class BLEManager : MonoBehaviour
         float average = 0f;
         foreach (string side in DIRECTIONS)
         {
-            if (deviceList[side]._connected == true) average += deviceList[side].dataJson.speedValue;
+            //if (deviceList[side]._connected == true) average += deviceList[side].dataJson.speedValue;
+            average += deviceList[side].dataJson.speedValue;
         }
         return average;
     }
@@ -336,6 +343,29 @@ public class BLEManager : MonoBehaviour
         if (isRecord)
         {
             AddJSONString(JsonExtract());
+            float speed = averageSpeed();
+            avg_speed += speed;
+            total_distance += speed * Time.deltaTime;
+            foreach (string side in DIRECTIONS)
+            {
+                float sumPressure = 0;
+
+                for (int i = 0; i < deviceList[side].dataJson.pressureMappingValue.Length; i++)
+                {
+                    sumPressure += deviceList[side].dataJson.pressureMappingValue[i];
+                }
+                int pressureSensor = convertPressure(sumPressure / 4f);
+                if (pressureSensor <= aLift && !stepTrigger[side]) stepTrigger[side] = true;
+                if (pressureSensor >= aStep && stepTrigger[side])
+                {
+                    stepTrigger[side] = false;
+                    total_steps += 1;
+                }
+            }
+
+            if (distanceText != null) distanceText.text = total_distance.ToString("F3") + " m";
+            if (stepsText != null) stepsText.text = total_steps.ToString();
+            
         }
         if (isReplay && isReadytoReplay)
         {
@@ -697,7 +727,7 @@ public class BLEManager : MonoBehaviour
         savedData.originalSkeleton = originalSkeleton;
         savedData.originalRotation = originalRotation;
         savedData.history = jsonList;
-        
+
         string jsonArrayString = JsonConvert.SerializeObject(savedData, Formatting.Indented);
 
         // Get the path to the PersistentDataPath and create a file name
@@ -705,6 +735,7 @@ public class BLEManager : MonoBehaviour
 
         // Write the JSON array string to the file
         File.WriteAllText(filePath, jsonArrayString);
+        SaveCounter();
 
         Debug.Log("JSON data saved to file: " + filePath);
     }
@@ -764,6 +795,32 @@ public class BLEManager : MonoBehaviour
         isReadytoReplay = true;
     }
 
+    int total_steps = 0;
+    float total_distance = 0;
+    float avg_speed = 0;
+    float avg_step_length = 0;
+    Dictionary<string, bool> stepTrigger = new Dictionary<string, bool>() {
+        { "Left",  false },
+        { "Right", false }
+    };
+
+    void ResetCounter()
+    {
+        total_steps = 0;
+        total_distance = 0;
+        avg_speed = 0;
+        avg_step_length = 0;
+
+        stepTrigger["Left"] = false;
+        stepTrigger["Right"] = false;
+    }
+
+    void SaveCounter()
+    {
+        avg_speed = avg_speed / jsonList.Count;
+        avg_step_length = total_distance / total_steps;
+        userInstance.OnSaveDashboard(total_steps, total_distance  / 1000f, avg_speed, avg_step_length);
+    }
 
     public void toggleRecord()
     {
@@ -775,14 +832,20 @@ public class BLEManager : MonoBehaviour
             SaveJSONListToFile();
             jsonList.Clear();
             replayButton.SetActive(true);
+            if (stepsText != null) stepsText.gameObject.transform.parent.gameObject.SetActive(false);
+            if (distanceText != null) distanceText.gameObject.transform.parent.gameObject.SetActive(false);
         }
         else
         {
             AndroidPopupMessage.ShowPopupMessage("Begin Recording Data");
+            ResetCounter();
+
             replayButton.SetActive(false);
             originalSkeleton = skeletonHandle.GetCurrentSkeleton();
             if (body) originalRotation = body.gameObject.transform.rotation.eulerAngles.y;
             else originalRotation = 0f;
+            if (stepsText != null) stepsText.gameObject.transform.parent.gameObject.SetActive(true);
+            if (distanceText != null) distanceText.gameObject.transform.parent.gameObject.SetActive(true);
         }
     }
 

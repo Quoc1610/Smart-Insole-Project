@@ -31,4 +31,23 @@ public class UserDataFacet : Facet
 
         return player;
     }
+
+    public UserEntity SaveUserDashBoard(int total_steps, float total_distance, float avg_speed, float avg_step_length)
+    {
+        var player = Auth.GetPlayer<UserEntity>();
+        float sessionTime = 0;
+        if (player.totalDistance != 0 && player.averageSpeed != 0) sessionTime = (player.totalDistance * 1000) / player.averageSpeed;
+        float time = (total_distance * 1000) / avg_speed;
+        
+        player.totalDistance+= total_distance;
+
+        
+        player.averageSpeed+= (player.averageSpeed * sessionTime + avg_speed*time) / (sessionTime+time);
+        player.averageStepLength = (player.averageStepLength * player.totalSteps + avg_step_length * total_steps) / (player.totalSteps + total_steps);
+
+        player.totalSteps += total_steps;
+        player.Save();
+
+        return player;
+    }
 }

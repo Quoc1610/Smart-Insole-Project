@@ -71,9 +71,9 @@ public class MainPageController : MonoBehaviour
         if (userInstance != null)
         {
             steps.text = userInstance.entity.totalSteps.ToString();
-            distance.text = userInstance.entity.totalDistance.ToString();
-            speed.text = userInstance.entity.averageSpeed.ToString();
-            prevents.text = userInstance.entity.averageStepLength.ToString();
+            distance.text = userInstance.entity.totalDistance.ToString("F2");
+            speed.text = userInstance.entity.averageSpeed.ToString("F2");
+            prevents.text = userInstance.entity.averageStepLength.ToString("F2");
         }
     }
 }
